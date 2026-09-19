@@ -38,6 +38,16 @@ export interface PatientClinicalContext {
   detectedAt?: string;
 }
 
+export interface ClinicalEvidence {
+  patientId: string;
+
+  source: ClinicalContextSource;
+
+  reason: string;
+
+  detectedAt?: string;
+}
+
 export interface PopulationContext {
   id: string;
 
@@ -59,6 +69,8 @@ export interface PopulationContext {
 
   reasons: string[];
 
+  evidence: ClinicalEvidence[];
+
   mostRecentDate?: string | undefined;
 }
 
@@ -68,4 +80,11 @@ export interface PopulationAnalysisResult {
   generatedAt: string;
 
   contexts: PopulationContext[];
+}
+
+export interface ClinicalEvidence {
+  patientId: string;
+  source: ClinicalContextSource;
+  reason: string;
+  date?: string;
 }

@@ -2,6 +2,67 @@ import type { OpenEMRPatient, VisitHistory } from "@/types/openemr";
 
 import type { PatientClinicalContext } from "@/types/population";
 
+import { detectSignificantChanges } from "./detect-changes";
+import { normalizeConditionContext, normalizeMedicationContext } from "./context-mapping";
+
+function normalizeObservationContext(observationName: string): string {
+  const name = observationName.toLowerCase();
+
+  if (name.includes("a1c") || name.includes("glucose") || name.includes("blood sugar")) {
+    return "Glycemic Management";
+  }
+
+  if (name.includes("blood pressure") || name.includes("systolic") || name.includes("diastolic")) {
+    return "Blood Pressure Management";
+  }
+
+  if (
+    name.includes("ldl") ||
+    name.includes("hdl") ||
+    name.includes("cholesterol") ||
+    name.includes("triglyceride")
+  ) {
+    return "Lipid Management";
+  }
+
+  if (name.includes("creatinine") || name.includes("egfr")) {
+    return "Renal Function";
+  }
+
+  return observationName;
+}
+
+export function extractObservationChangeContexts(
+  patient: OpenEMRPatient,
+): PatientClinicalContext[] {
+  const changes = detectSignificantChanges(patient);
+
+  return changes.map((change) => {
+    const clinicalContext = normalizeObservationContext(change.observationType);
+
+    const unitText = change.unit ? ` ${change.unit}` : "";
+
+    return {
+      patientId: String(patient.id),
+
+      contextId: createContextId(clinicalContext),
+
+      clinicalContext,
+
+      source: "OBSERVATION_CHANGE",
+
+      reason:
+        `${change.observationType} changed ` +
+        `from ${change.previousValue}${unitText} ` +
+        `to ${change.currentValue}${unitText} ` +
+        `(${Math.abs(change.percentChange).toFixed(1)}% ` +
+        `${change.direction.toLowerCase()}).`,
+
+      detectedAt: change.currentDate,
+    };
+  });
+}
+
 function createContextId(value: string): string {
   return value
     .toLowerCase()
@@ -11,29 +72,33 @@ function createContextId(value: string): string {
 }
 
 function extractConditionContexts(patient: OpenEMRPatient): PatientClinicalContext[] {
-  return patient.conditions.map((condition) => ({
-    patientId: String(patient.id),
-
-    contextId: createContextId(condition),
-
-    clinicalContext: condition,
-
-    source: "CONDITION",
-
-    reason: `${condition} is documented as an active condition.`,
-  }));
-}
-
-function extractMedicationContexts(patient: OpenEMRPatient): PatientClinicalContext[] {
-  return patient.medications.map((medication) => {
-    const contextName = `${medication} use`;
+  return patient.conditions.map((condition) => {
+    const clinicalContext = normalizeConditionContext(condition);
 
     return {
       patientId: String(patient.id),
 
-      contextId: createContextId(contextName),
+      contextId: createContextId(clinicalContext),
 
-      clinicalContext: contextName,
+      clinicalContext,
+
+      source: "CONDITION",
+
+      reason: `${condition} is documented as an active condition.`,
+    };
+  });
+}
+
+function extractMedicationContexts(patient: OpenEMRPatient): PatientClinicalContext[] {
+  return patient.medications.map((medication) => {
+    const clinicalContext = normalizeMedicationContext(medication);
+
+    return {
+      patientId: String(patient.id),
+
+      contextId: createContextId(clinicalContext),
+
+      clinicalContext,
 
       source: "MEDICATION",
 
@@ -157,5 +222,8 @@ export function extractPatientContexts(patient: OpenEMRPatient): PatientClinical
     ...extractConditionContexts(patient),
     ...extractMedicationContexts(patient),
     ...extractVisitContexts(patient),
+
+    // NEW
+    ...extractObservationChangeContexts(patient),
   ];
 }

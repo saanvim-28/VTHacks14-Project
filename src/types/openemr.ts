@@ -4,6 +4,13 @@ export interface VisitHistory {
   notes: string;
 }
 
+export interface Observation {
+  type: string;
+  value: number;
+  unit: string;
+  date: string;
+}
+
 export interface OpenEMRPatient {
   id: number;
   name: string;
@@ -12,6 +19,6 @@ export interface OpenEMRPatient {
 
   conditions: string[];
   medications: string[];
-
+  observations: Observation[];
   visit_history: VisitHistory[];
 }
