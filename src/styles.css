@@ -6999,3 +6999,466 @@ textarea {
     margin-left: 0;
   }
 }
+
+.imported-context-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  padding: 24px;
+}
+.imported-context-card {
+  min-height: 150px;
+  padding: 20px;
+  border: 1px solid #b7d5c5;
+  border-radius: 4px;
+  background: #e5f0ea;
+}
+.imported-context-card .workspace-kicker {
+  display: block;
+  color: #34574a !important;
+  font-weight: 800;
+}
+.imported-context-card strong {
+  display: block;
+  margin: 12px 0;
+  color: #18352b;
+  font:
+    800 2rem/1 Fraunces,
+    Georgia,
+    serif;
+}
+.imported-context-card ul {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding-left: 18px;
+  color: #18352b;
+  font-weight: 700;
+}
+@media (max-width: 760px) {
+  .imported-context-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Patient review workspace treatment */
+.data-source-panel {
+  overflow: hidden;
+}
+.data-source-panel > .record-panel-heading,
+.visit-panel > .record-panel-heading,
+.checklist-panel > .record-panel-heading {
+  min-height: 72px;
+  padding: 22px 28px;
+}
+.imported-context-grid {
+  padding: 28px;
+  background: #f7f2e7;
+}
+.imported-context-card {
+  min-height: 170px;
+  background: #e5f0ea;
+  border-color: #b7d5c5;
+}
+.record-change-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+  padding: 34px 38px;
+  border: 1px solid #9fc3b1;
+  border-radius: 4px 4px 22px 22px;
+  background: #b9dce5;
+}
+.record-change-panel .workspace-kicker {
+  color: #245b46 !important;
+}
+.record-change-panel h2 {
+  max-width: 780px;
+  margin: 12px 0 8px;
+  color: #18352b !important;
+  font:
+    800 2rem/1.2 Fraunces,
+    Georgia,
+    serif;
+}
+.record-change-panel p {
+  max-width: 780px;
+  margin: 0;
+  color: #34574a !important;
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.6;
+}
+.record-change-action {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 12px;
+  padding: 15px 20px;
+  border-radius: 4px;
+  background: #3e8368;
+  color: #fff8f0 !important;
+  font-weight: 800;
+  text-decoration: none;
+}
+.record-change-action:hover,
+.record-change-action:focus-visible {
+  background: #245b46;
+}
+.visit-panel {
+  overflow: hidden;
+}
+.visit-panel .encounter-list {
+  padding: 30px 34px 34px;
+}
+.encounter-list li {
+  min-height: 100px;
+}
+.encounter-list time {
+  color: #34574a !important;
+  font:
+    800 0.9rem/1.3 "IBM Plex Mono",
+    monospace;
+}
+.encounter-list strong {
+  color: #18352b !important;
+  font-size: 1.05rem;
+}
+.encounter-list p {
+  color: #34574a !important;
+  font-weight: 600;
+}
+.encounter-node {
+  background: #7a2e4d !important;
+  border-color: #7a2e4d !important;
+}
+@media (max-width: 760px) {
+  .record-change-panel {
+    display: grid;
+    gap: 20px;
+    padding: 26px;
+  }
+  .record-change-action {
+    justify-self: start;
+  }
+}
+
+/* Vytra unified dark-green workspace system */
+:root {
+  --background: #f9f9f6 !important;
+  --foreground: #173126 !important;
+  --card: #fffefa !important;
+  --card-foreground: #173126 !important;
+  --muted: #e2ece9 !important;
+  --muted-foreground: #3e5d51 !important;
+  --border: #c9d8d1 !important;
+  --primary: #1c4430 !important;
+  --primary-foreground: #fffefa !important;
+  --sidebar: #123524 !important;
+  --sidebar-foreground: #f5f8f3 !important;
+  --sidebar-primary: #9fc9b4 !important;
+  --sidebar-accent: #1c4430 !important;
+  --sidebar-border: #2d5541 !important;
+}
+html,
+body,
+#root,
+.app-frame,
+.workspace,
+.page-shell {
+  background: #f9f9f6 !important;
+  color: #173126 !important;
+}
+.sidebar {
+  background: #123524 !important;
+  color: #f5f8f3 !important;
+  border-color: #2d5541 !important;
+}
+.workspace-topbar {
+  background: #fffefa !important;
+  border-color: #d5e0da !important;
+}
+.page-shell h1,
+.page-shell h2,
+.page-shell h3,
+.page-shell h4,
+.patient-identity h3,
+.record-hero h1,
+.summary-card strong,
+.metric-value,
+.trend-heading strong {
+  color: #173126 !important;
+}
+.page-heading-row p,
+.clinical-change p,
+.patient-dob,
+.clinical-meta,
+.metric-name,
+.metric-delta,
+.record-unavailable,
+.chart-axis,
+.breadcrumb,
+.topbar-source,
+.feature-header p,
+.information-source {
+  color: #3e5d51 !important;
+}
+.summary-card,
+.clinical-queue,
+.clinical-section,
+.record-panel,
+.record-hero,
+.observation-metric,
+.information-card,
+.feature-row,
+.briefing-card,
+.empty-state,
+.demo-hidden {
+  background: #fffefa !important;
+  border-color: #c9d8d1 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+}
+.summary-card:first-child {
+  background: #1c4430 !important;
+  border-color: #1c4430 !important;
+}
+.summary-card:first-child strong,
+.summary-card:first-child span,
+.summary-card:first-child small {
+  color: #fffefa !important;
+}
+.queue-header {
+  background: #e2ece9 !important;
+  color: #173126 !important;
+  border-color: #c9d8d1 !important;
+}
+.queue-header h2,
+.queue-header span {
+  color: #173126 !important;
+}
+.queue-columns {
+  background: #f4f6f5 !important;
+  color: #29483b !important;
+  border-color: #c9d8d1 !important;
+}
+.clinical-row,
+.clinical-row:nth-child(even),
+.clinical-rows,
+.clinical-queue {
+  background: #fffefa !important;
+}
+.clinical-row:hover {
+  background: #f0f6f3 !important;
+}
+.queue-search {
+  background: #fffefa !important;
+  border-color: #9fc9b4 !important;
+  box-shadow: none !important;
+}
+.queue-search input {
+  color: #173126 !important;
+  background: transparent !important;
+}
+.queue-search input::placeholder {
+  color: #3e5d51 !important;
+}
+.review-sample,
+.primary-action,
+.briefing-action,
+.record-change-action {
+  background: #1c4430 !important;
+  border-color: #1c4430 !important;
+  color: #fffefa !important;
+  box-shadow: none !important;
+}
+.review-sample:hover,
+.primary-action:hover,
+.briefing-action:hover,
+.record-change-action:hover {
+  background: #123524 !important;
+  border-color: #123524 !important;
+}
+.secondary-action,
+.save-action {
+  background: #e2ece9 !important;
+  border-color: #b5cec2 !important;
+  color: #1c4430 !important;
+}
+.record-status,
+.source-tag,
+.demo-label,
+.review-progress,
+.information-score,
+.feature-score,
+.feature-duration {
+  background: #e2ece9 !important;
+  border-color: transparent !important;
+  color: #1c4430 !important;
+  border-radius: 999px !important;
+}
+.patient-monogram,
+.patient-hero-avatar,
+.source-record-number {
+  background: #e2ece9 !important;
+  color: #1c4430 !important;
+  border-color: #b5cec2 !important;
+}
+.record-panel-heading {
+  background: #e2ece9 !important;
+  border-color: #c9d8d1 !important;
+  color: #173126 !important;
+}
+.record-panel-heading h2 {
+  color: #173126 !important;
+}
+.demo-disclosure {
+  background: #e2ece9 !important;
+  border-color: #b5cec2 !important;
+  color: #24483a !important;
+}
+.record-change-panel {
+  background: #fffefa !important;
+  border: 1px solid #c9d8d1 !important;
+  border-left: 5px solid #1c4430 !important;
+  border-radius: 4px 4px 18px 18px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+}
+.record-change-panel .workspace-kicker {
+  color: #3e5d51 !important;
+}
+.record-change-panel h2 {
+  color: #173126 !important;
+}
+.record-change-panel p {
+  color: #3e5d51 !important;
+}
+.feature-summary {
+  background: #1c4430 !important;
+  border-color: #1c4430 !important;
+}
+.feature-summary strong,
+.feature-summary span,
+.feature-summary small {
+  color: #fffefa !important;
+}
+.imported-context-card {
+  background: #e2ece9 !important;
+  border-color: #b5cec2 !important;
+}
+.imported-context-card strong,
+.imported-context-card li {
+  color: #173126 !important;
+}
+.context-strip {
+  background: #e2ece9 !important;
+  border-color: #b5cec2 !important;
+}
+.context-strip strong,
+.context-strip span,
+.context-strip small {
+  color: #24483a !important;
+}
+.chart-area {
+  fill: #e2ece9 !important;
+}
+.chart-line {
+  stroke: #1c4430 !important;
+}
+.chart-point {
+  stroke: #1c4430 !important;
+  fill: #fffefa !important;
+}
+
+/* Final patient-detail alignment and readability pass */
+.data-source-panel,
+.data-source-panel > .imported-context-grid,
+.visit-panel,
+.checklist-panel {
+  background: #fffefa !important;
+}
+.data-source-panel > .imported-context-grid {
+  padding: 28px !important;
+}
+.record-panel-heading h2,
+.section-title h2,
+.workspace-section-heading h2 {
+  font-size: 1.35rem !important;
+  line-height: 1.2 !important;
+  font-weight: 800 !important;
+}
+.encounter-list {
+  padding: 32px 36px 36px !important;
+}
+.encounter-list li {
+  grid-template-columns: 130px 20px minmax(0, 1fr) !important;
+  align-items: center !important;
+  min-height: 112px !important;
+  gap: 18px !important;
+}
+.encounter-list li:not(:last-child)::after {
+  left: 157px !important;
+  top: 58px !important;
+  bottom: -58px !important;
+}
+.encounter-list li > div {
+  align-self: center !important;
+}
+.encounter-list time {
+  align-self: center !important;
+  text-align: right !important;
+}
+.encounter-list p {
+  margin-top: 8px !important;
+  line-height: 1.55 !important;
+}
+.review-checklist {
+  padding: 22px 28px 30px !important;
+  gap: 18px !important;
+}
+.review-checklist label {
+  align-items: flex-start !important;
+  line-height: 1.45 !important;
+  color: #173126 !important;
+}
+.review-check-icon {
+  margin-top: 2px !important;
+  border-color: #8eaaa0 !important;
+}
+@media (max-width: 760px) {
+  .encounter-list {
+    padding: 24px 20px !important;
+  }
+  .encounter-list li {
+    grid-template-columns: 90px 18px minmax(0, 1fr) !important;
+    gap: 12px !important;
+  }
+  .encounter-list li:not(:last-child)::after {
+    left: 111px !important;
+  }
+}
+
+/* Overview summary cards: make the metric labels and context readable on light cards. */
+.queue-summary .summary-card:not(:first-child) {
+  background: #e2ece9 !important;
+  border-color: #b5cec2 !important;
+  color: #173126 !important;
+}
+.queue-summary .summary-card:not(:first-child) span,
+.queue-summary .summary-card:not(:first-child) small {
+  color: #315b4b !important;
+}
+.queue-summary .summary-card:not(:first-child) strong {
+  color: #173126 !important;
+}
+.queue-summary .summary-card:not(:first-child) .summary-icon {
+  color: #173126 !important;
+}
+.queue-summary .summary-card > div {
+  display: grid;
+  gap: 14px;
+}
+.queue-summary .summary-card small {
+  max-width: 260px;
+  line-height: 1.45;
+}

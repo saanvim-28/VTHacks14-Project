@@ -94,18 +94,23 @@ function Index() {
       </div>
       <section className="queue-summary" aria-label="Patient record overview">
         {[
-          { label: "Patient records", value: queue.length, icon: Users, note: "In this workspace" },
+          {
+            label: "Patient records",
+            value: queue.length,
+            icon: Users,
+            note: "Unique patients available for review",
+          },
           {
             label: "Recorded conditions",
             value: queue.reduce((total, patient) => total + patient.conditions.length, 0),
             icon: Stethoscope,
-            note: "Across exported records",
+            note: "Condition entries across the OpenEMR export",
           },
           {
             label: "Listed medications",
             value: queue.reduce((total, patient) => total + patient.medications.length, 0),
             icon: Pill,
-            note: "From the source export",
+            note: "Medication entries across the OpenEMR export",
           },
         ].map((item) => (
           <article className="summary-card" key={item.label}>

@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { Link } from "@tanstack/react-router";
 import { CalendarDays, ClipboardList } from "lucide-react";
 import type { OpenEMRPatient, Observation } from "@/types/openemr";
 import { MetricSparkline, ObservationChart } from "./observation-chart";
@@ -100,12 +101,55 @@ export function PatientWorkspace({ patient }: PatientWorkspaceProps) {
             )}
           </>
         ) : (
-          <div className="empty-state">
-            <h3>No observations in this OpenEMR export</h3>
-            <p>This record includes no longitudinal measurements to display.</p>
+          <div className="imported-context-grid">
+            <section className="imported-context-card">
+              <span className="workspace-kicker">Documented conditions</span>
+              <strong>{patient.conditions.length}</strong>
+              <ul>
+                {patient.conditions.map((condition) => (
+                  <li key={condition}>{condition}</li>
+                ))}
+              </ul>
+            </section>
+            <section className="imported-context-card">
+              <span className="workspace-kicker">Current medications</span>
+              <strong>{patient.medications.length}</strong>
+              <ul>
+                {patient.medications.map((medication) => (
+                  <li key={medication}>{medication}</li>
+                ))}
+              </ul>
+            </section>
+            <section className="imported-context-card">
+              <span className="workspace-kicker">Visit history</span>
+              <strong>{patient.visit_history.length}</strong>
+              <ul>
+                {patient.visit_history.map((visit) => (
+                  <li key={`${visit.date}-${visit.reason}`}>
+                    {visit.date} · {visit.reason}
+                  </li>
+                ))}
+              </ul>
+            </section>
           </div>
         )}
       </section>
+      {patient.visit_history[0] && (
+        <section className="record-change-panel">
+          <div>
+            <span className="workspace-kicker">What changed?</span>
+            <h2>{patient.visit_history[0].reason}</h2>
+            <p>{patient.visit_history[0].notes}</p>
+          </div>
+          <Link
+            className="record-change-action"
+            to="/patients/$patientId/information"
+            params={{ patientId: patient.patient_id }}
+          >
+            Find relevant information <span aria-hidden="true">→</span>
+          </Link>
+        </section>
+      )}
       <section className="record-panel visit-panel">
         <header className="record-panel-heading">
           <div>
