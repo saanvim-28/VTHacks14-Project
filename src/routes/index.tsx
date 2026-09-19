@@ -43,7 +43,7 @@ function Index() {
   const [search, setSearch] = useState("");
   const normalizedSearch = search.trim().toLowerCase();
   const visiblePatients = queue.filter((patient) =>
-    [patient.name, patient.patient_id, ...patient.conditions, ...patient.medications]
+    [patient.name, patient.patient_id, patient.dob, ...patient.conditions, ...patient.medications]
       .join(" ")
       .toLowerCase()
       .includes(normalizedSearch),
@@ -112,7 +112,7 @@ function Index() {
             <Search size={16} aria-hidden="true" />
             <input
               aria-label="Search patients"
-              placeholder="Search name, condition, medication…"
+              placeholder="Search name, DOB, condition, medication…"
               value={search}
               onChange={(event) => setSearch(event.target.value)}
             />
