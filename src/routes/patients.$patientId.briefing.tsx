@@ -10,7 +10,7 @@ import {
 } from "@/components/chatone/shared";
 
 export const Route = createFileRoute("/patients/$patientId/briefing")({
-  head: () => ({ meta: [{ title: "Clinical Briefing — ChatOne" }] }),
+  head: () => ({ meta: [{ title: "Clinical Briefing — Vytra" }] }),
   loader: ({ context, params }) =>
     context.queryClient.ensureQueryData(patientQuery(params.patientId)),
   pendingComponent: PageSkeleton,

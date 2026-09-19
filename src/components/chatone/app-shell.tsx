@@ -43,7 +43,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </span>
             <span>
               <strong>
-                ChatOne<span className="brand-period">.</span>
+                Vytra<span className="brand-period">.</span>
               </strong>
               <small>Medication workspace</small>
             </span>

@@ -6866,3 +6866,51 @@ textarea {
     height: 180px !important;
   }
 }
+
+/* Vytra logo mark: paired clinical brackets with a central signal point. */
+.brand-mark {
+  position: relative !important;
+  display: block !important;
+  width: 72px !important;
+  height: 72px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  flex: none !important;
+}
+.brand-mark i {
+  display: none !important;
+}
+.brand-mark::before,
+.brand-mark::after {
+  content: "";
+  position: absolute;
+  top: 10px;
+  width: 26px;
+  height: 52px;
+  box-sizing: border-box;
+}
+.brand-mark::before {
+  left: 7px;
+  border-left: 5px solid #f7f1e4;
+  border-top: 5px solid #f7f1e4;
+  border-bottom: 5px solid #f7f1e4;
+}
+.brand-mark::after {
+  right: 7px;
+  border-right: 5px solid #57a583;
+  border-top: 5px solid #57a583;
+  border-bottom: 5px solid #57a583;
+}
+.brand-mark + span .brand-period {
+  display: none !important;
+}
+.brand-mark i:first-child {
+  display: block !important;
+  position: absolute;
+  left: 31px;
+  top: 31px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #57a583 !important;
+}

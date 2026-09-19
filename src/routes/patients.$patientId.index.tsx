@@ -20,7 +20,7 @@ import { DataUnavailable, PageSkeleton, RouteError } from "@/components/chatone/
 export const Route = createFileRoute("/patients/$patientId/")({
   head: ({ params }) => ({
     meta: [
-      { title: `Patient ${params.patientId} — ChatOne` },
+      { title: `Patient ${params.patientId} — Vytra` },
       { name: "description", content: "Demographics, conditions, and medications from OpenEMR." },
     ],
   }),

@@ -18,12 +18,12 @@ import { EmptyState, PageSkeleton, RouteError } from "@/components/chatone/share
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Patient Records — ChatOne" },
+      { title: "Patient Records — Vytra" },
       {
         name: "description",
         content: "Review patient records from the OpenEMR export.",
       },
-      { property: "og:title", content: "Patient Records — ChatOne" },
+      { property: "og:title", content: "Patient Records — Vytra" },
       {
         property: "og:description",
         content: "Review patient records from the OpenEMR export.",

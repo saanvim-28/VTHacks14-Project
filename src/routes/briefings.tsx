@@ -4,7 +4,7 @@ import { patientsQuery } from "@/data/queries";
 import { PageSkeleton, RouteError } from "@/components/chatone/shared";
 
 export const Route = createFileRoute("/briefings")({
-  head: () => ({ meta: [{ title: "60-second Briefings — ChatOne" }] }),
+  head: () => ({ meta: [{ title: "60-second Briefings — Vytra" }] }),
   loader: ({ context }) => context.queryClient.ensureQueryData(patientsQuery()),
   pendingComponent: PageSkeleton,
   errorComponent: RouteError,
