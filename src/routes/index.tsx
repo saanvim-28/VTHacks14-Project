@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
+
 import {
   LayoutGrid,
   ArrowUpRight,
@@ -11,44 +12,72 @@ import {
   Pill,
   X,
 } from "lucide-react";
+
 import { patientsQuery } from "@/data/queries";
-import type { Patient } from "@/data/patient-api";
+import type { OpenEMRPatient } from "@/types/openemr";
+
 import { EmptyState, PageSkeleton, RouteError } from "@/components/chatone/shared";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Patient Records — Vytra" },
+      {
+        title: "Patient Records — Vytra",
+      },
       {
         name: "description",
         content: "Review patient records from the OpenEMR export.",
       },
-      { property: "og:title", content: "Patient Records — Vytra" },
+      {
+        property: "og:title",
+        content: "Patient Records — Vytra",
+      },
       {
         property: "og:description",
         content: "Review patient records from the OpenEMR export.",
       },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
+      {
+        property: "og:type",
+        content: "website",
+      },
+      {
+        name: "twitter:card",
+        content: "summary_large_image",
+      },
     ],
   }),
+
   loader: ({ context }) => context.queryClient.ensureQueryData(patientsQuery()),
+
   pendingComponent: PageSkeleton,
+
   errorComponent: RouteError,
+
   component: Index,
 });
 
 function Index() {
   const { data: queue } = useSuspenseQuery(patientsQuery());
+
   const [search, setSearch] = useState("");
+
   const normalizedSearch = search.trim().toLowerCase();
-  const visiblePatients = queue.filter((patient) =>
-    [patient.name, patient.patient_id, patient.dob, ...patient.conditions, ...patient.medications]
+
+  const visiblePatients = queue.filter((patient: OpenEMRPatient) =>
+    [
+      patient.name,
+      patient.patient_id,
+      patient.dob ?? "",
+      patient.sex ?? "",
+      ...patient.conditions,
+      ...patient.medications,
+    ]
       .join(" ")
       .toLowerCase()
       .includes(normalizedSearch),
   );
-  if (queue.length === 0)
+
+  if (queue.length === 0) {
     return (
       <main className="page-shell">
         <EmptyState
@@ -57,6 +86,8 @@ function Index() {
         />
       </main>
     );
+  }
+
   return (
     <main className="page-shell dashboard-page">
       <div className="page-heading-row">
@@ -65,25 +96,47 @@ function Index() {
             <LayoutGrid />
             Clinical overview
           </div>
+
           <h1>Patient records</h1>
+
           <p>{queue.length} patient records from OpenEMR.</p>
         </div>
+
         <span className="export-source">
-          <Database size={16} aria-hidden="true" /> OpenEMR export
+          <Database size={16} aria-hidden="true" />
+          OpenEMR export
         </span>
       </div>
+
       <section className="queue-summary" aria-label="Patient record overview">
         {[
-          { label: "Patient records", value: queue.length, icon: Users, note: "In this workspace" },
+          {
+            label: "Patient records",
+            value: queue.length,
+            icon: Users,
+            note: "In this workspace",
+          },
+
           {
             label: "Recorded conditions",
-            value: queue.reduce((total, patient) => total + patient.conditions.length, 0),
+
+            value: queue.reduce(
+              (total: number, patient: OpenEMRPatient) => total + patient.conditions.length,
+              0,
+            ),
+
             icon: Stethoscope,
             note: "Across exported records",
           },
+
           {
             label: "Listed medications",
-            value: queue.reduce((total, patient) => total + patient.medications.length, 0),
+
+            value: queue.reduce(
+              (total: number, patient: OpenEMRPatient) => total + patient.medications.length,
+              0,
+            ),
+
             icon: Pill,
             note: "From the source export",
           },
@@ -91,15 +144,19 @@ function Index() {
           <article className="summary-card" key={item.label}>
             <div>
               <span>{item.label}</span>
+
               <strong>{String(item.value).padStart(2, "0")}</strong>
+
               <small>{item.note}</small>
             </div>
+
             <span className="summary-icon">
               <item.icon size={20} />
             </span>
           </article>
         ))}
       </section>
+
       <section className="clinical-queue" id="patient-queue" aria-labelledby="queue-title">
         <header className="queue-header">
           <div>
@@ -108,14 +165,17 @@ function Index() {
               <span className="queue-total">{String(queue.length).padStart(2, "0")}</span>
             </h2>
           </div>
+
           <div className="queue-search">
             <Search size={16} aria-hidden="true" />
+
             <input
               aria-label="Search patients"
               placeholder="Search name, DOB, condition, medication…"
               value={search}
               onChange={(event) => setSearch(event.target.value)}
             />
+
             {search && (
               <button type="button" aria-label="Clear search" onClick={() => setSearch("")}>
                 <X size={14} />
@@ -123,29 +183,39 @@ function Index() {
             )}
           </div>
         </header>
+
         <div className="queue-columns" aria-hidden="true">
           <span>PATIENT / IDENTIFIER</span>
+
           <span>CONDITIONS / MEDICATIONS</span>
+
           <span>PATIENT RECORD</span>
         </div>
+
         <div className="clinical-rows">
-          {visiblePatients.map((patient, index) => (
+          {visiblePatients.map((patient: OpenEMRPatient, index: number) => (
             <PatientCard key={patient.patient_id} patient={patient} index={index} />
           ))}
+
           {visiblePatients.length === 0 && (
             <div className="queue-no-results">
               <Search size={24} />
+
               <h3>No matching patients</h3>
+
               <p>Try another name, condition, or medication.</p>
+
               <button onClick={() => setSearch("")}>Clear search</button>
             </div>
           )}
         </div>
+
         <footer className="queue-footer">
           <span>
             <LayoutGrid size={15} aria-hidden="true" />
             {visiblePatients.length} of {queue.length} records
           </span>
+
           <span>Source order · priority not supplied</span>
         </footer>
       </section>
@@ -153,40 +223,64 @@ function Index() {
   );
 }
 
-function PatientCard({ patient, index }: { patient: Patient; index: number }) {
+function PatientCard({ patient, index }: { patient: OpenEMRPatient; index: number }) {
   const initials = patient.name
-    .split(" ")
-    .map((part) => part[0])
-    .join("");
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((part: string) => part.charAt(0))
+    .join("")
+    .toUpperCase();
+
   return (
     <article className="clinical-row">
       <div className="patient-identity">
         <span className="queue-number">{String(index + 1).padStart(2, "0")}</span>
+
         <span className="patient-monogram" aria-hidden="true">
           {initials}
         </span>
+
         <div>
           <h3>{patient.name}</h3>
+
           <div className="clinical-meta">
             <span className="patient-code">PT-{patient.patient_id}</span>
+
             <span>{patient.sex ?? "Sex not recorded"}</span>
           </div>
+
           <p className="patient-dob">
             {patient.dob ? `DOB ${patient.dob}` : "Birth date not recorded"}
           </p>
         </div>
       </div>
+
       <div className="clinical-change">
         <span className="change-kicker">CONDITIONS / MEDICATIONS</span>
-        <h4>{patient.conditions.join(" · ") || "No conditions recorded"}</h4>
-        <p>{patient.medications.join(" · ") || "No medications recorded"}</p>
+
+        <h4>
+          {patient.conditions.length > 0
+            ? patient.conditions.join(" · ")
+            : "No conditions recorded"}
+        </h4>
+
+        <p>
+          {patient.medications.length > 0
+            ? patient.medications.join(" · ")
+            : "No medications recorded"}
+        </p>
       </div>
+
       <div className="clinical-action">
         <span className="record-status">Exported record</span>
+
         <Link
           className="review-sample"
           to="/patients/$patientId"
-          params={{ patientId: patient.patient_id }}
+          params={{
+            patientId: patient.patient_id,
+          }}
           aria-label={`Review patient ${patient.name}`}
         >
           Review patient
