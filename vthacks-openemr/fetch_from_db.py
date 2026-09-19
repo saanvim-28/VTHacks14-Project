@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 import pymysql
 
 # Connect directly to your local Docker MySQL container
@@ -55,7 +56,7 @@ finally:
   connection.close()
 
 # 3. Save everything to a JSON file
-filename = "patients.json"
+filename = Path(__file__).resolve().with_name("patients.json")
 with open(filename, "w") as f:
   json.dump(patient_records, f, indent=2)
 

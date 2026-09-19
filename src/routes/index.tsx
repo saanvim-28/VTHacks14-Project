@@ -1,25 +1,32 @@
+import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { Activity, ArrowUpRight, RefreshCw } from "lucide-react";
-import { ClinicalSignalArtwork } from "@/components/chatone/clinical-artwork";
-import { Button } from "@/components/ui/button";
+import {
+  LayoutGrid,
+  ArrowUpRight,
+  Database,
+  Search,
+  Users,
+  Stethoscope,
+  Pill,
+  X,
+} from "lucide-react";
 import { patientsQuery } from "@/data/queries";
-import type { Patient, Priority } from "@/data/mock-api";
-import { useChatOne } from "@/components/chatone/app-context";
-import { EmptyState, PageSkeleton, RelativeTime, RouteError } from "@/components/chatone/shared";
+import type { Patient } from "@/data/patient-api";
+import { EmptyState, PageSkeleton, RouteError } from "@/components/chatone/shared";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "AI Priority Queue — ChatOne" },
+      { title: "Patient Records — ChatOne" },
       {
         name: "description",
-        content: "Review meaningful patient changes prioritized by clinical intelligence.",
+        content: "Review patient records from the OpenEMR export.",
       },
-      { property: "og:title", content: "AI Priority Queue — ChatOne" },
+      { property: "og:title", content: "Patient Records — ChatOne" },
       {
         property: "og:description",
-        content: "Review meaningful patient changes prioritized by clinical intelligence.",
+        content: "Review patient records from the OpenEMR export.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -32,145 +39,127 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
-  const { data } = useSuspenseQuery(patientsQuery());
-  const { simulatedPatientId, simulateNewData } = useChatOne();
-  const score: Record<Priority, number> = { HIGH: 3, MEDIUM: 2, LOW: 1 };
-  const queue = data
-    .map((patient) =>
-      simulatedPatientId === patient.patient_id
-        ? {
-            ...patient,
-            priority: "HIGH" as const,
-            priority_reason: "New critical potassium result differs from baseline.",
-          }
-        : patient,
-    )
-    .sort((a, b) => score[b.priority] - score[a.priority]);
+  const { data: queue } = useSuspenseQuery(patientsQuery());
+  const [search, setSearch] = useState("");
+  const normalizedSearch = search.trim().toLowerCase();
+  const visiblePatients = queue.filter((patient) =>
+    [patient.name, patient.patient_id, ...patient.conditions, ...patient.medications]
+      .join(" ")
+      .toLowerCase()
+      .includes(normalizedSearch),
+  );
   if (queue.length === 0)
     return (
       <main className="page-shell">
         <EmptyState
-          title="No patients need review right now"
-          body="ChatOne will surface patients here when meaningful changes are detected."
+          title="No patient records available"
+          body="The OpenEMR export does not contain any patient records."
         />
       </main>
     );
   return (
     <main className="page-shell dashboard-page">
-      <div className="dashboard-topline">
-        <span>Workspace / Clinical overview</span>
-        <span className="care-team">
-          Care team <span>CT</span>
-        </span>
-      </div>
       <div className="page-heading-row">
         <div>
           <div className="eyebrow">
-            <Activity />
+            <LayoutGrid />
             Clinical overview
           </div>
-          <h1>AI Priority Queue</h1>
-          <p aria-live="polite">
-            {simulatedPatientId
-              ? "New data received — queue reprioritized just now."
-              : `${queue.length} patients changed since your last review.`}
-          </p>
+          <h1>Patient records</h1>
+          <p>{queue.length} patient records from OpenEMR.</p>
         </div>
-        <Button variant="outline" onClick={simulateNewData} className="simulate-button">
-          <RefreshCw className={simulatedPatientId ? "animate-spin-once" : ""} />
-          {simulatedPatientId ? "Reset demo" : "Simulate new data"}
-        </Button>
+        <span className="export-source">
+          <Database size={16} aria-hidden="true" /> OpenEMR export
+        </span>
       </div>
-      <section className="instrument-overview" aria-label="Patient review summary">
-        <ClinicalSignalArtwork />
-        <div className="instrument-summary">
-          <span className="eyebrow">Review overview</span>
-          <div className="stats">
+      <section className="queue-summary" aria-label="Patient record overview">
+        {[
+          { label: "Patient records", value: queue.length, icon: Users, note: "In this workspace" },
+          {
+            label: "Recorded conditions",
+            value: queue.reduce((total, patient) => total + patient.conditions.length, 0),
+            icon: Stethoscope,
+            note: "Across exported records",
+          },
+          {
+            label: "Listed medications",
+            value: queue.reduce((total, patient) => total + patient.medications.length, 0),
+            icon: Pill,
+            note: "From the source export",
+          },
+        ].map((item) => (
+          <article className="summary-card" key={item.label}>
             <div>
-              <strong>{String(queue.length).padStart(2, "0")}</strong>
-              <small>Patients to review</small>
+              <span>{item.label}</span>
+              <strong>{String(item.value).padStart(2, "0")}</strong>
+              <small>{item.note}</small>
             </div>
-            <div>
-              <strong>
-                {String(queue.filter((patient) => patient.priority === "HIGH").length).padStart(
-                  2,
-                  "0",
-                )}
-              </strong>
-              <small>High priority</small>
-            </div>
-          </div>
-          <a className="hero-link" href="#patient-queue">
-            View patient queue
-            <ArrowUpRight size={16} />
-          </a>
-        </div>
+            <span className="summary-icon">
+              <item.icon size={20} />
+            </span>
+          </article>
+        ))}
       </section>
       <section className="clinical-queue" id="patient-queue" aria-labelledby="queue-title">
         <header className="queue-header">
           <div>
-            <div className="queue-eyebrow">
-              <Activity size={18} aria-hidden="true" />
-              CLINICAL INTELLIGENCE <span className="queue-version">/ 01</span>
-            </div>
             <h2 id="queue-title">
-              Patient priority queue
+              Patient queue
               <span className="queue-total">{String(queue.length).padStart(2, "0")}</span>
             </h2>
           </div>
-          <div className="queue-header-right">
-            <span className="sync-label">
-              <span aria-hidden="true" />
-              Monitoring active
-            </span>
-            <span className="sort-label">Highest priority first ↓</span>
+          <div className="queue-search">
+            <Search size={16} aria-hidden="true" />
+            <input
+              aria-label="Search patients"
+              placeholder="Search name, condition, medication…"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+            />
+            {search && (
+              <button type="button" aria-label="Clear search" onClick={() => setSearch("")}>
+                <X size={14} />
+              </button>
+            )}
           </div>
         </header>
         <div className="queue-columns" aria-hidden="true">
           <span>PATIENT / IDENTIFIER</span>
-          <span>CLINICAL SIGNAL</span>
-          <span>REVIEW STATUS</span>
+          <span>CONDITIONS / MEDICATIONS</span>
+          <span>PATIENT RECORD</span>
         </div>
         <div className="clinical-rows">
-          {queue.map((patient, index) => (
-            <PatientCard
-              key={patient.patient_id}
-              patient={patient}
-              index={index}
-              moved={simulatedPatientId === patient.patient_id}
-            />
+          {visiblePatients.map((patient, index) => (
+            <PatientCard key={patient.patient_id} patient={patient} index={index} />
           ))}
+          {visiblePatients.length === 0 && (
+            <div className="queue-no-results">
+              <Search size={24} />
+              <h3>No matching patients</h3>
+              <p>Try another name, condition, or medication.</p>
+              <button onClick={() => setSearch("")}>Clear search</button>
+            </div>
+          )}
         </div>
         <footer className="queue-footer">
           <span>
-            <Activity size={15} aria-hidden="true" />
-            {queue.length} patient records in view
+            <LayoutGrid size={15} aria-hidden="true" />
+            {visiblePatients.length} of {queue.length} records
           </span>
-          <span>
-            Last sync: just now <span className="footer-divider">/</span> Demo data
-          </span>
+          <span>Source order · priority not supplied</span>
         </footer>
       </section>
     </main>
   );
 }
 
-function PatientCard({
-  patient,
-  index,
-  moved,
-}: {
-  patient: Patient;
-  index: number;
-  moved: boolean;
-}) {
+function PatientCard({ patient, index }: { patient: Patient; index: number }) {
   const initials = patient.name
     .split(" ")
     .map((part) => part[0])
     .join("");
-  const priority = patient.priority.slice(0, 1) + patient.priority.slice(1).toLowerCase();
   return (
-    <article className={`clinical-row ${moved ? "queue-moved" : ""}`}>
+    <article className="clinical-row">
       <div className="patient-identity">
         <span className="queue-number">{String(index + 1).padStart(2, "0")}</span>
         <span className="patient-monogram" aria-hidden="true">
@@ -180,19 +169,20 @@ function PatientCard({
           <h3>{patient.name}</h3>
           <div className="clinical-meta">
             <span className="patient-code">PT-{patient.patient_id}</span>
-            <span>
-              {patient.age} yrs · {patient.sex}
-            </span>
+            <span>{patient.sex ?? "Sex not recorded"}</span>
           </div>
+          <p className="patient-dob">
+            {patient.dob ? `DOB ${patient.dob}` : "Birth date not recorded"}
+          </p>
         </div>
       </div>
       <div className="clinical-change">
-        <span className="change-kicker">DETECTED CHANGE</span>
-        <h4>{moved ? "New critical data" : "Recent observations"}</h4>
-        <p>{patient.priority_reason}</p>
+        <span className="change-kicker">CONDITIONS / MEDICATIONS</span>
+        <h4>{patient.conditions.join(" · ") || "No conditions recorded"}</h4>
+        <p>{patient.medications.join(" · ") || "No medications recorded"}</p>
       </div>
       <div className="clinical-action">
-        <span className="neutral-priority">{priority} priority</span>
+        <span className="record-status">Exported record</span>
         <Link
           className="review-sample"
           to="/patients/$patientId"
@@ -202,11 +192,6 @@ function PatientCard({
           Review patient
           <ArrowUpRight size={16} />
         </Link>
-        {moved ? (
-          <span className="relative-time">Just now</span>
-        ) : (
-          <RelativeTime kind={index === 0 ? "recent" : index === 1 ? "medium" : "older"} />
-        )}
       </div>
     </article>
   );
