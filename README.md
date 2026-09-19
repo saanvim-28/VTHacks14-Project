@@ -3,10 +3,10 @@
 Our project for VTHacks 14!
 
 ## Team
-- DeetyaV
-- KruthiS
-- SaanviM
-- SindhuG
+- Deetya Vadigepalli
+- Kruthi Sudigali
+- Saanvi Movva
+- Sindhu Gangireddy
 
 
 # Topic Description
