@@ -1,0 +1,62 @@
+[
+  {
+    "id": 1,
+    "name": "John Doe",
+    "dob": "2026-09-19",
+    "sex": "Male",
+    "conditions": [
+      "Hypertension"
+    ],
+    "medications": [
+      "Lisinopril 10mg"
+    ]
+  },
+  {
+    "id": 2,
+    "name": "Sarah Jenkins",
+    "dob": "2026-09-19",
+    "sex": "Female",
+    "conditions": [
+      "Type 2 Diabetes Mellitus"
+    ],
+    "medications": [
+      "Metformin 500mg"
+    ]
+  },
+  {
+    "id": 3,
+    "name": "Robert Smith",
+    "dob": "2026-09-19",
+    "sex": "Male",
+    "conditions": [
+      "Mild Persistent Asthma"
+    ],
+    "medications": [
+      "Albuterol Inhaler"
+    ]
+  },
+  {
+    "id": 4,
+    "name": "Michael Brown",
+    "dob": "2026-09-19",
+    "sex": "Male",
+    "conditions": [
+      "Hyperlipidemia"
+    ],
+    "medications": [
+      "Atorvastatin 20mg"
+    ]
+  },
+  {
+    "id": 5,
+    "name": "Jessica Taylor",
+    "dob": "2026-09-19",
+    "sex": "Female",
+    "conditions": [
+      "Hypothyroidism"
+    ],
+    "medications": [
+      "Levothyroxine 50mcg"
+    ]
+  }
+]

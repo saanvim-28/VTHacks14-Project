@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mariadb:10.5
+    container_name: openemr_mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: openemr
+      MYSQL_USER: openemr
+      MYSQL_PASSWORD: openemrpassword
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    restart: unless-stopped
+
+  openemr:
+    image: openemr/openemr:latest
+    container_name: openemr_app
+    depends_on:
+      - mysql
+    ports:
+      - "8080:80"
+      - "8443:443"
+    environment:
+      - MYSQL_HOST=mysql
+      - MYSQL_PORT=3306
+      - MYSQL_USER=openemr
+      - MYSQL_PASS=openemrpassword
+      - MYSQL_ROOT_PASS=rootpassword
+      - MYSQL_DB=openemr
+    restart: unless-stopped
+
+volumes:
+  mysql_data:
