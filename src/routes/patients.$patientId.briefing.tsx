@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { patientQuery } from "@/data/queries";
+import { isPharmaSearchConfigured, searchPharmaForPatient } from "@/data/pharma-api";
 import {
   DataUnavailable,
   PageSkeleton,
@@ -22,6 +23,15 @@ function BriefingPage() {
   const { patientId } = Route.useParams();
   const { data: patient } = useSuspenseQuery(patientQuery(patientId));
   const [playing, setPlaying] = useState(false);
+  const analysisQuery = useQuery({
+    queryKey: ["pharma-search", "briefing", patient?.patient_id],
+    queryFn: () => {
+      if (!patient) throw new Error("Patient record is unavailable.");
+      return searchPharmaForPatient(patient);
+    },
+    enabled: isPharmaSearchConfigured() && Boolean(patient),
+    staleTime: 5 * 60 * 1000,
+  });
   if (!patient)
     return (
       <main className="page-shell">
@@ -42,13 +52,16 @@ function BriefingPage() {
         <PatientContext name={patient.name} id={patient.patient_id} />
       </header>
       <section className="briefing-card" aria-label="60-second clinical briefing">
-        <span className="eyebrow">Illustrative demo</span>
+        <span className="eyebrow">
+          {isPharmaSearchConfigured() ? "Connected pharma search" : "Connection required"}
+        </span>
         <h2>{patient.name}'s review snapshot</h2>
         <p>
-          The imported record includes {patient.conditions.join(", ") || "no recorded conditions"}{" "}
-          and {patient.medications.join(", ") || "no recorded medications"}. Review the latest
-          observations, confirm the medication list, and document any change before the next
-          care-team handoff.
+          {analysisQuery.data?.briefing ||
+            (isPharmaSearchConfigured()
+              ? analysisQuery.error?.message ||
+                "Preparing a briefing from the connected pharma knowledge base…"
+              : "Configure the Supabase connection to generate a briefing from live pharma knowledge-base matches.")}
         </p>
         <div className="briefing-progress" aria-hidden="true">
           <span />

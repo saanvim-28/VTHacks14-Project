@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import {
   LayoutGrid,
   ArrowUpRight,
@@ -12,7 +12,8 @@ import {
   X,
 } from "lucide-react";
 import { patientsQuery } from "@/data/queries";
-import type { Patient } from "@/data/patient-api";
+import { isPharmaSearchConfigured, searchPharmaForPatients } from "@/data/pharma-api";
+import type { OpenEMRPatient } from "@/types/openemr";
 import { EmptyState, PageSkeleton, RouteError } from "@/components/chatone/shared";
 
 export const Route = createFileRoute("/")({
@@ -41,13 +42,32 @@ export const Route = createFileRoute("/")({
 function Index() {
   const { data: queue } = useSuspenseQuery(patientsQuery());
   const [search, setSearch] = useState("");
+  const [rankByMatch, setRankByMatch] = useState(false);
+  const [rankRequested, setRankRequested] = useState(false);
+  const matchQuery = useQuery({
+    queryKey: ["pharma-search", "queue"],
+    queryFn: () => searchPharmaForPatients(queue),
+    enabled: rankRequested && isPharmaSearchConfigured(),
+    staleTime: 5 * 60 * 1000,
+  });
   const normalizedSearch = search.trim().toLowerCase();
-  const visiblePatients = queue.filter((patient) =>
+  const filteredPatients = queue.filter((patient) =>
     [patient.name, patient.patient_id, patient.dob, ...patient.conditions, ...patient.medications]
       .join(" ")
       .toLowerCase()
       .includes(normalizedSearch),
   );
+  const scores = new Map(
+    (matchQuery.data?.patients ?? []).map((analysis) => [
+      String(analysis.patient_id),
+      analysis.results[0]?.similarity ?? 0,
+    ]),
+  );
+  const visiblePatients = rankByMatch
+    ? [...filteredPatients].sort(
+        (a, b) => (scores.get(String(b.patient_id)) ?? 0) - (scores.get(String(a.patient_id)) ?? 0),
+      )
+    : filteredPatients;
   if (queue.length === 0)
     return (
       <main className="page-shell">
@@ -122,6 +142,23 @@ function Index() {
               </button>
             )}
           </div>
+          {isPharmaSearchConfigured() && (
+            <button
+              type="button"
+              className="ai-rank-button"
+              aria-pressed={rankByMatch}
+              onClick={() => {
+                setRankRequested(true);
+                setRankByMatch((value) => !value);
+              }}
+            >
+              {matchQuery.isFetching
+                ? "Ranking…"
+                : rankByMatch
+                  ? "AI ranked"
+                  : "Rank by clinical match"}
+            </button>
+          )}
         </header>
         <div className="queue-columns" aria-hidden="true">
           <span>PATIENT / IDENTIFIER</span>
@@ -153,7 +190,7 @@ function Index() {
   );
 }
 
-function PatientCard({ patient, index }: { patient: Patient; index: number }) {
+function PatientCard({ patient, index }: { patient: OpenEMRPatient; index: number }) {
   const initials = patient.name
     .split(" ")
     .map((part) => part[0])

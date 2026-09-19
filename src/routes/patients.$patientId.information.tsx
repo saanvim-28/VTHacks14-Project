@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { isPharmaSearchConfigured, searchPharmaForPatient } from "@/data/pharma-api";
 import { patientQuery } from "@/data/queries";
 import {
   DataUnavailable,
@@ -24,12 +25,22 @@ function InformationPage() {
   const { patientId } = Route.useParams();
   const { data: patient } = useSuspenseQuery(patientQuery(patientId));
   const [saved, setSaved] = useState<number[]>([]);
+  const matchesQuery = useQuery({
+    queryKey: ["pharma-search", "patient", patient?.patient_id],
+    queryFn: () => {
+      if (!patient) throw new Error("Patient record is unavailable.");
+      return searchPharmaForPatient(patient);
+    },
+    enabled: isPharmaSearchConfigured() && Boolean(patient),
+    staleTime: 5 * 60 * 1000,
+  });
   if (!patient)
     return (
       <main className="page-shell">
         <DataUnavailable />
       </main>
     );
+  const results = matchesQuery.data?.results ?? [];
   return (
     <main className="page-shell info-page">
       <Link to="/patients/$patientId" params={{ patientId }} className="back-link">
@@ -45,26 +56,51 @@ function InformationPage() {
         </div>
         <PatientContext name={patient.name} id={patient.patient_id} />
       </header>
+      {!isPharmaSearchConfigured() && (
+        <div className="integration-notice" role="status">
+          <strong>Clinical matching is ready to connect.</strong>
+          <span>
+            Configure the Supabase URL and publishable key to retrieve live pharma matches.
+          </span>
+        </div>
+      )}
+      {matchesQuery.isError && (
+        <div className="integration-notice integration-error" role="alert">
+          <strong>Clinical matching could not be loaded.</strong>
+          <span>{matchesQuery.error.message}</span>
+        </div>
+      )}
+      {matchesQuery.isLoading && (
+        <div className="integration-notice" role="status">
+          <strong>Finding relevant information…</strong>
+          <span>Searching the connected pharma knowledge base.</span>
+        </div>
+      )}
       <section className="information-list" aria-label="Relevant clinical information">
-        {buildInformation(patient.conditions, patient.medications).map((item, index) => {
+        {results.map((item, index) => {
           const isSaved = saved.includes(index);
+          const score =
+            typeof item.similarity === "number" ? Math.round(item.similarity * 100) : null;
           return (
-            <article className="information-card" key={item.title}>
+            <article className="information-card" key={String(item.id ?? item.title ?? index)}>
               <div className="information-index">{String(index + 1).padStart(2, "0")}</div>
               <div className="information-body">
                 <div className="information-card-topline">
                   <div>
-                    <h2>{item.title}</h2>
-                    <p className="information-source">{item.source}</p>
+                    <h2>{item.product_name || item.title || "Relevant clinical information"}</h2>
+                    <p className="information-source">
+                      {item.title || item.indication || "Pharma knowledge base result"}
+                    </p>
                   </div>
-                  <span className="information-score">{item.score}% match</span>
+                  {score !== null && <span className="information-score">{score}% match</span>}
                 </div>
                 <details open={index === 0} className="information-reasons">
                   <summary>Why surfaced?</summary>
                   <ul>
-                    {item.reasons.map((reason) => (
-                      <li key={reason}>{reason}</li>
-                    ))}
+                    <li>
+                      {item.why_surfaced ||
+                        `Related to ${item.therapeutic_area || "the patient's clinical context"}.`}
+                    </li>
                   </ul>
                 </details>
                 <div className="information-actions">
@@ -93,63 +129,12 @@ function InformationPage() {
           );
         })}
       </section>
+      {matchesQuery.data && results.length === 0 && (
+        <div className="integration-notice" role="status">
+          <strong>No high-confidence matches were returned.</strong>
+          <span>Try again after the pharma knowledge base has been indexed.</span>
+        </div>
+      )}
     </main>
   );
-}
-
-function buildInformation(conditions: string[], medications: string[]) {
-  const condition = conditions[0] ?? "documented condition";
-  const medication = medications[0] ?? "current medication list";
-  return [
-    {
-      title: "Glycemic management and monitoring",
-      source: "Clinical practice guidance · illustrative",
-      score: 96,
-      reasons: [
-        `Relevant to ${condition}`,
-        "Relevant clinical topic detected",
-        `Medication context includes ${medication}`,
-      ],
-    },
-    {
-      title: "Medication safety and follow-up",
-      source: "Medication review reference · illustrative",
-      score: 92,
-      reasons: [
-        "Matches the imported medication list",
-        "Supports reconciliation before the next visit",
-        "Follow-up interval is clinically relevant",
-      ],
-    },
-    {
-      title: "Cardiometabolic risk assessment",
-      source: "Evidence summary · illustrative",
-      score: 88,
-      reasons: [
-        "Related to the patient's active problem list",
-        "Useful for baseline risk review",
-        "Pairs with longitudinal observations",
-      ],
-    },
-    {
-      title: "Patient education considerations",
-      source: "Counseling reference · illustrative",
-      score: 84,
-      reasons: [
-        "Supports shared decision-making",
-        "Can be reviewed with medication counseling",
-        "Appropriate for care-team handoff",
-      ],
-    },
-    {
-      title: "Recommended review checkpoints",
-      source: "Care pathway reference · illustrative",
-      score: 79,
-      reasons: [
-        "Helps structure the next clinical review",
-        "Connects conditions and medications",
-        "Provides a concise checklist for the care team",
-      ],
-    },
-  ];
 }

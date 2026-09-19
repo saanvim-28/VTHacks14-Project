@@ -535,6 +535,19 @@ async function processPatient(
 // EDGE FUNCTION
 // ======================================================
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+};
+
+function json(body: unknown, init: ResponseInit = {}) {
+  return Response.json(body, {
+    ...init,
+    headers: { ...corsHeaders, ...(init.headers ?? {}) },
+  });
+}
+
 export default {
 
   fetch: withSupabase(
@@ -547,6 +560,9 @@ export default {
 
 
     async (req, ctx) => {
+      if (req.method === "OPTIONS") {
+        return new Response("ok", { headers: corsHeaders });
+      }
 
       try {
 
@@ -601,7 +617,7 @@ export default {
 
         if (patients.length === 0) {
 
-          return Response.json(
+          return json(
             {
               success: false,
               error:
@@ -663,7 +679,7 @@ export default {
         // 7. RETURN ANALYSIS FOR ALL PATIENTS
         // ==================================================
 
-        return Response.json({
+        return json({
 
           success:
             failed === 0,
@@ -691,7 +707,7 @@ export default {
         console.error(error);
 
 
-        return Response.json(
+        return json(
           {
             success:
               false,

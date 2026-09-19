@@ -6914,3 +6914,88 @@ textarea {
   border-radius: 50%;
   background: #57a583 !important;
 }
+
+.integration-notice {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  padding: 18px 22px;
+  border: 1px solid #b7d5c5;
+  border-radius: 4px;
+  background: #e5f0ea;
+  color: #18352b;
+}
+.integration-notice strong {
+  color: #18352b;
+  font-weight: 800;
+}
+.integration-notice span {
+  color: #34574a;
+  font-weight: 600;
+}
+.integration-error {
+  border-color: #c895a8;
+  background: #f2dfe5;
+}
+.integration-error strong,
+.integration-error span {
+  color: #5e2038;
+}
+
+.ai-rank-button {
+  min-height: 42px;
+  padding: 10px 15px;
+  border: 1px solid #396f7d;
+  border-radius: 4px;
+  background: #d8eee3;
+  color: #18352b;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.ai-rank-button:hover,
+.ai-rank-button[aria-pressed="true"] {
+  background: #3e8368;
+  color: #fff8f0;
+  border-color: #3e8368;
+}
+
+.context-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 24px;
+  padding: 20px 24px;
+  border: 1px solid #b7d5c5;
+  border-radius: 4px;
+  background: #e5f0ea;
+  color: #18352b;
+}
+.context-strip div {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+.context-strip strong {
+  color: #18352b;
+  font:
+    800 1.8rem/1 Fraunces,
+    Georgia,
+    serif;
+}
+.context-strip span,
+.context-strip small {
+  color: #34574a;
+  font-weight: 700;
+}
+.context-strip small {
+  margin-left: auto;
+}
+@media (max-width: 760px) {
+  .context-strip {
+    display: grid;
+    gap: 12px;
+  }
+  .context-strip small {
+    margin-left: 0;
+  }
+}

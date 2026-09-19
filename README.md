@@ -20,6 +20,13 @@ npm install
 npm run dev
 ```
 
+To enable live clinical matches, copy `.env.example` to `.env.local` and set
+`VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`. The frontend calls the
+`pharma-search` Supabase Edge Function with the OpenEMR patient context. The
+function creates a Gemini embedding, searches the `match_pharma_content` vector
+RPC, and returns ranked pharma records with match explanations. No service-role
+key belongs in the browser.
+
 ### Validate and build
 
 ```sh
@@ -27,7 +34,7 @@ npx tsc --noEmit
 npm run build
 ```
 
-The website source is in `src/`, static assets are in `public/`, and `vite.config.ts` configures the TanStack Start application. The frontend reads `vthacks-openemr/patients.json` directly through `src/data/patient-api.ts`. It validates the export and displays only the supplied demographics, conditions, and medications. The queue retains the order in the export because no clinical priority is supplied. The patient detail page also offers a clearly labeled illustrative workspace with fictional observations and encounters from `src/data/illustrative-patient-data.ts`. These fixtures are separate from OpenEMR records and can be hidden with the demo-data toggle. The charts do not provide clinical interpretations; the local checklist does not update OpenEMR. Clinical matches and audio briefings remain unavailable.
+The website source is in `src/`, static assets are in `public/`, and `vite.config.ts` configures the TanStack Start application. The frontend reads `vthacks-openemr/patients.json` directly through `src/data/patient-api.ts`. It validates the export and displays the supplied demographics, conditions, medications, visits, and observations. Clinical matches and AI ranking use the Supabase `pharma-search` function when the browser environment is configured; without those variables the UI shows a connection state instead of fabricated matches.
 
 ### Update the patient data
 

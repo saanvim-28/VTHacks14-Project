@@ -159,7 +159,7 @@ function PatientDetail() {
           )}
         </section>
       </div>
-      <PatientWorkspace key={patient.patient_id} patientId={patient.patient_id} />
+      <PatientWorkspace key={patient.patient_id} patient={patient} />
     </main>
   );
 }
