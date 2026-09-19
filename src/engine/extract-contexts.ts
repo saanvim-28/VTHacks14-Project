@@ -3,12 +3,22 @@ import type { OpenEMRPatient, VisitHistory } from "@/types/openemr";
 import type { PatientClinicalContext } from "@/types/population";
 
 import { detectSignificantChanges } from "./detect-changes";
+
 import { normalizeConditionContext, normalizeMedicationContext } from "./context-mapping";
 
+/**
+ * Converts an observation name into the broader clinical
+ * context used by the population-analysis engine.
+ */
 function normalizeObservationContext(observationName: string): string {
   const name = observationName.toLowerCase();
 
-  if (name.includes("a1c") || name.includes("glucose") || name.includes("blood sugar")) {
+  if (
+    name.includes("a1c") ||
+    name.includes("hba1c") ||
+    name.includes("glucose") ||
+    name.includes("blood sugar")
+  ) {
     return "Glycemic Management";
   }
 
@@ -29,9 +39,35 @@ function normalizeObservationContext(observationName: string): string {
     return "Renal Function";
   }
 
+  if (name.includes("tsh") || name.includes("thyroid")) {
+    return "Thyroid Management";
+  }
+
+  // If we don't recognize the measurement yet,
+  // preserve its original name.
   return observationName;
 }
 
+/**
+ * Creates a stable machine-readable ID for a clinical context.
+ *
+ * Example:
+ * "Blood Pressure Management"
+ * becomes
+ * "blood-pressure-management"
+ */
+function createContextId(value: string): string {
+  return value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+/**
+ * Converts significant changes in observations into
+ * clinical contexts.
+ */
 export function extractObservationChangeContexts(
   patient: OpenEMRPatient,
 ): PatientClinicalContext[] {
@@ -43,7 +79,7 @@ export function extractObservationChangeContexts(
     const unitText = change.unit ? ` ${change.unit}` : "";
 
     return {
-      patientId: String(patient.id),
+      patientId: patient.patient_id,
 
       contextId: createContextId(clinicalContext),
 
@@ -63,20 +99,16 @@ export function extractObservationChangeContexts(
   });
 }
 
-function createContextId(value: string): string {
-  return value
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "");
-}
-
+/**
+ * Converts the patient's documented conditions into
+ * normalized clinical contexts.
+ */
 function extractConditionContexts(patient: OpenEMRPatient): PatientClinicalContext[] {
   return patient.conditions.map((condition) => {
     const clinicalContext = normalizeConditionContext(condition);
 
     return {
-      patientId: String(patient.id),
+      patientId: patient.patient_id,
 
       contextId: createContextId(clinicalContext),
 
@@ -89,12 +121,16 @@ function extractConditionContexts(patient: OpenEMRPatient): PatientClinicalConte
   });
 }
 
+/**
+ * Converts the patient's medications into normalized
+ * clinical contexts.
+ */
 function extractMedicationContexts(patient: OpenEMRPatient): PatientClinicalContext[] {
   return patient.medications.map((medication) => {
     const clinicalContext = normalizeMedicationContext(medication);
 
     return {
-      patientId: String(patient.id),
+      patientId: patient.patient_id,
 
       contextId: createContextId(clinicalContext),
 
@@ -108,10 +144,10 @@ function extractMedicationContexts(patient: OpenEMRPatient): PatientClinicalCont
 }
 
 /**
- * Looks at the text of an individual visit and identifies
- * useful clinical contexts.
+ * Looks at an individual visit and identifies useful
+ * clinical contexts from the visit reason and notes.
  *
- * For the MVP this is deliberately rule-based.
+ * For the MVP this remains deliberately rule-based.
  */
 function extractContextsFromVisit(
   patient: OpenEMRPatient,
@@ -124,7 +160,7 @@ function extractContextsFromVisit(
   // Blood pressure / hypertension context
   if (text.includes("blood pressure") || text.includes("hypertension")) {
     contexts.push({
-      patientId: String(patient.id),
+      patientId: patient.patient_id,
 
       contextId: "blood-pressure-management",
 
@@ -139,9 +175,15 @@ function extractContextsFromVisit(
   }
 
   // Diabetes / glycemic context
-  if (text.includes("hba1c") || text.includes("blood glucose") || text.includes("diabetes")) {
+  if (
+    text.includes("hba1c") ||
+    text.includes("a1c") ||
+    text.includes("blood glucose") ||
+    text.includes("blood sugar") ||
+    text.includes("diabetes")
+  ) {
     contexts.push({
-      patientId: String(patient.id),
+      patientId: patient.patient_id,
 
       contextId: "glycemic-management",
 
@@ -162,7 +204,7 @@ function extractContextsFromVisit(
     text.includes("shortness of breath")
   ) {
     contexts.push({
-      patientId: String(patient.id),
+      patientId: patient.patient_id,
 
       contextId: "asthma-management",
 
@@ -177,9 +219,15 @@ function extractContextsFromVisit(
   }
 
   // Lipid management
-  if (text.includes("ldl") || text.includes("cholesterol") || text.includes("lipid")) {
+  if (
+    text.includes("ldl") ||
+    text.includes("hdl") ||
+    text.includes("cholesterol") ||
+    text.includes("triglyceride") ||
+    text.includes("lipid")
+  ) {
     contexts.push({
-      patientId: String(patient.id),
+      patientId: patient.patient_id,
 
       contextId: "lipid-management",
 
@@ -196,7 +244,7 @@ function extractContextsFromVisit(
   // Thyroid context
   if (text.includes("tsh") || text.includes("thyroid") || text.includes("hypothyroid")) {
     contexts.push({
-      patientId: String(patient.id),
+      patientId: patient.patient_id,
 
       contextId: "thyroid-management",
 
@@ -210,20 +258,56 @@ function extractContextsFromVisit(
     });
   }
 
+  // Renal / kidney context
+  if (
+    text.includes("creatinine") ||
+    text.includes("egfr") ||
+    text.includes("kidney") ||
+    text.includes("renal")
+  ) {
+    contexts.push({
+      patientId: patient.patient_id,
+
+      contextId: "renal-function",
+
+      clinicalContext: "Renal Function",
+
+      source: "VISIT_HISTORY",
+
+      reason: `Renal function was discussed during the visit on ${visit.date}.`,
+
+      detectedAt: visit.date,
+    });
+  }
+
   return contexts;
 }
 
+/**
+ * Extracts clinical contexts from every visit belonging
+ * to the patient.
+ */
 function extractVisitContexts(patient: OpenEMRPatient): PatientClinicalContext[] {
   return patient.visit_history.flatMap((visit) => extractContextsFromVisit(patient, visit));
 }
 
+/**
+ * Main entry point for context extraction.
+ *
+ * Combines evidence from:
+ * - active conditions
+ * - medications
+ * - visit history
+ * - significant observation changes
+ */
 export function extractPatientContexts(patient: OpenEMRPatient): PatientClinicalContext[] {
   return [
     ...extractConditionContexts(patient),
+
     ...extractMedicationContexts(patient),
+
     ...extractVisitContexts(patient),
 
-    // NEW
     ...extractObservationChangeContexts(patient),
   ];
 }

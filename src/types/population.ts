@@ -84,7 +84,10 @@ export interface PopulationAnalysisResult {
 
 export interface ClinicalEvidence {
   patientId: string;
+
   source: ClinicalContextSource;
+
   reason: string;
-  date?: string;
+
+  detectedAt?: string;
 }
