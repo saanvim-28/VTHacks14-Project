@@ -424,3 +424,13 @@ entrypoint = "./functions/daily-briefing/index.ts"
 # Specifies static files to be bundled with the function. Supports glob patterns.
 # For example, if you want to serve static HTML pages in your function:
 # static_files = [ "./functions/daily-briefing/*.html" ]
+
+[functions.clinical-reasoning]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/clinical-reasoning/index.ts"
+
+[functions.pharma-search]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/pharma-search/index.ts"

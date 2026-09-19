@@ -1,6 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { withSupabase } from "jsr:@supabase/server@^1";
-
+import { createClient } from "jsr:@supabase/supabase-js@2";
 // ======================================================
 // TYPES
 // ======================================================
@@ -12,7 +11,7 @@ interface Visit {
 }
 
 interface Patient {
-  id: number;
+  id: string | number;
   name?: string;
   dob?: string;
   sex?: string;
@@ -26,6 +25,8 @@ interface Patient {
 // ======================================================
 
 const OPENROUTER_EMBEDDING_MODEL = "liquid/lfm-2.5-embedding-350m:free";
+
+const SIMILARITY_THRESHOLD = 0.45;
 
 // ======================================================
 // BUILD PATIENT SEARCH CONTEXT
@@ -216,22 +217,35 @@ async function processPatient(patient: Patient, openRouterKey: string, supabaseA
     }
 
     // ==================================================
-    // 5. FILTER WEAK RESULTS
+    // 5. INSPECT + FILTER RESULTS
     // ==================================================
 
-    const filteredResults = (data || []).filter((item: any) => item.similarity >= 0.72);
+    const rawMatches = (data || []).map((item: any) => ({
+      product_name: item.product_name,
+      therapeutic_area: item.therapeutic_area,
+      indication: item.indication,
+      similarity: item.similarity,
+    }));
+
+    console.log(`Raw pharma matches for patient ${patient.id}:`, rawMatches);
+
+    const filteredResults = (data || []).filter(
+      (item: any) => item.similarity >= SIMILARITY_THRESHOLD,
+    );
+
+    console.log(
+      `Patient ${patient.id}: ${filteredResults.length} of ${rawMatches.length} matches passed threshold ${SIMILARITY_THRESHOLD}`,
+    );
 
     // ==================================================
     // 6. ADD LOCAL "WHY SURFACED?"
     // ==================================================
 
-    const resultsWithWhy = filteredResults.map((result: any) => {
-      return {
-        ...result,
+    const resultsWithWhy = filteredResults.map((result: any) => ({
+      ...result,
 
-        why_surfaced: generateWhySurfaced(patient, result),
-      };
-    });
+      why_surfaced: generateWhySurfaced(patient, result),
+    }));
 
     // ==================================================
     // 7. GENERATE LOCAL BRIEFING
@@ -251,6 +265,10 @@ async function processPatient(patient: Patient, openRouterKey: string, supabaseA
       patient_name: patient.name || null,
 
       search_context: searchContext,
+
+      // TEMPORARY:
+      // Used to tune our similarity threshold.
+      raw_matches: rawMatches,
 
       results: resultsWithWhy,
 
@@ -298,121 +316,115 @@ function json(body: unknown, init: ResponseInit = {}) {
 // EDGE FUNCTION
 // ======================================================
 
-export default {
-  fetch: withSupabase(
-    {
-      auth: ["publishable", "secret"],
-    },
+Deno.serve(async (req: Request) => {
+  // ==================================================
+  // CORS PREFLIGHT
+  // ==================================================
 
-    async (req, ctx) => {
-      // ==================================================
-      // CORS PREFLIGHT
-      // ==================================================
+  if (req.method === "OPTIONS") {
+    return new Response("ok", {
+      headers: corsHeaders,
+    });
+  }
 
-      if (req.method === "OPTIONS") {
-        return new Response("ok", {
-          headers: corsHeaders,
-        });
-      }
+  try {
+    // ==================================================
+    // 1. GET ENVIRONMENT VARIABLES
+    // ==================================================
 
-      try {
-        // ==================================================
-        // 1. GET OPENROUTER API KEY
-        // ==================================================
+    const openRouterKey = Deno.env.get("OPENROUTER_API_KEY");
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
-        const openRouterKey = Deno.env.get("OPENROUTER_API_KEY");
+    if (!openRouterKey) {
+      throw new Error("OPENROUTER_API_KEY is missing");
+    }
 
-        if (!openRouterKey) {
-          throw new Error("OPENROUTER_API_KEY is missing");
-        }
+    if (!supabaseUrl) {
+      throw new Error("SUPABASE_URL is missing");
+    }
 
-        // ==================================================
-        // 2. READ REQUEST BODY
-        // ==================================================
+    if (!serviceRoleKey) {
+      throw new Error("SUPABASE_SERVICE_ROLE_KEY is missing");
+    }
 
-        const body = await req.json();
+    // ==================================================
+    // 2. CREATE SUPABASE ADMIN CLIENT
+    // ==================================================
 
-        // ==================================================
-        // 3. SUPPORT ONE OR MULTIPLE PATIENTS
-        // ==================================================
+    const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+      },
+    });
 
-        const patients: Patient[] = Array.isArray(body) ? body : [body];
+    // ==================================================
+    // 3. READ REQUEST BODY
+    // ==================================================
 
-        // ==================================================
-        // 4. VALIDATE REQUEST
-        // ==================================================
+    const body = await req.json();
 
-        if (patients.length === 0) {
-          return json(
-            {
-              success: false,
+    // ==================================================
+    // 4. SUPPORT ONE OR MULTIPLE PATIENTS
+    // ==================================================
 
-              error: "At least one patient is required",
-            },
+    const patients: Patient[] = Array.isArray(body) ? body : [body];
 
-            {
-              status: 400,
-            },
-          );
-        }
+    if (patients.length === 0) {
+      return json(
+        {
+          success: false,
+          error: "At least one patient is required",
+        },
+        {
+          status: 400,
+        },
+      );
+    }
 
-        // ==================================================
-        // 5. PROCESS PATIENTS SEQUENTIALLY
-        //
-        // Avoid sending a large number of embedding requests
-        // simultaneously.
-        // ==================================================
+    // ==================================================
+    // 5. PROCESS PATIENTS
+    // ==================================================
 
-        const patientResults = [];
+    const patientResults = [];
 
-        for (const patient of patients) {
-          const result = await processPatient(patient, openRouterKey, ctx.supabaseAdmin);
+    for (const patient of patients) {
+      const result = await processPatient(patient, openRouterKey, supabaseAdmin);
 
-          patientResults.push(result);
-        }
+      patientResults.push(result);
+    }
 
-        // ==================================================
-        // 6. CALCULATE SUMMARY
-        // ==================================================
+    // ==================================================
+    // 6. CALCULATE SUMMARY
+    // ==================================================
 
-        const successful = patientResults.filter((result) => result.success).length;
+    const successful = patientResults.filter((result) => result.success).length;
 
-        const failed = patientResults.length - successful;
+    const failed = patientResults.length - successful;
 
-        // ==================================================
-        // 7. RETURN ANALYSIS
-        // ==================================================
+    // ==================================================
+    // 7. RETURN RESULT
+    // ==================================================
 
-        return json({
-          success: failed === 0,
+    return json({
+      success: failed === 0,
+      patient_count: patients.length,
+      successful,
+      failed,
+      patients: patientResults,
+    });
+  } catch (error) {
+    console.error("pharma-search error:", error);
 
-          patient_count: patients.length,
-
-          successful,
-
-          failed,
-
-          patients: patientResults,
-        });
-      } catch (error) {
-        // ==================================================
-        // GLOBAL ERROR HANDLING
-        // ==================================================
-
-        console.error(error);
-
-        return json(
-          {
-            success: false,
-
-            error: error instanceof Error ? error.message : String(error),
-          },
-
-          {
-            status: 500,
-          },
-        );
-      }
-    },
-  ),
-};
+    return json(
+      {
+        success: false,
+        error: error instanceof Error ? error.message : String(error),
+      },
+      {
+        status: 500,
+      },
+    );
+  }
+});

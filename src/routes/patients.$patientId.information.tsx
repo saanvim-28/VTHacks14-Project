@@ -135,6 +135,8 @@ function InformationPage() {
           <span>Try again after the pharma knowledge base has been indexed.</span>
         </div>
       )}
+
+      <div className="briefing-actions"></div>
     </main>
   );
 }
