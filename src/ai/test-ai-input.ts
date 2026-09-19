@@ -1,6 +1,7 @@
 import dotenv from "dotenv";
 
 dotenv.config({ path: ".env.local" });
+
 console.log("Gemini key loaded:", process.env["GEMINI_API_KEY"] ? "YES" : "NO");
 
 import type { OpenEMRPatient } from "@/types/openemr";
@@ -11,7 +12,7 @@ import { analyzeClinicalDataWithAI } from "./clinical-reasoning";
 
 const testPatients: OpenEMRPatient[] = [
   {
-    id: 1048,
+    patient_id: "1048",
 
     name: "Elena Vasquez",
 
@@ -48,7 +49,7 @@ const testPatients: OpenEMRPatient[] = [
   },
 
   {
-    id: 2183,
+    patient_id: "2183",
 
     name: "Marcus Chen",
 
@@ -85,7 +86,7 @@ const testPatients: OpenEMRPatient[] = [
   },
 
   {
-    id: 3371,
+    patient_id: "3371",
 
     name: "Ruth Okafor",
 
@@ -134,7 +135,7 @@ console.log("\n========== AI INPUT ==========\n");
 
 console.log(JSON.stringify(aiInput, null, 2));
 
-async function testAI() {
+async function testAI(): Promise<void> {
   console.log("\n========== GEMINI CLINICAL ANALYSIS ==========\n");
 
   const result = await analyzeClinicalDataWithAI(aiInput);
@@ -142,7 +143,7 @@ async function testAI() {
   console.log(JSON.stringify(result, null, 2));
 }
 
-testAI().catch((error) => {
+testAI().catch((error: unknown) => {
   console.error("AI analysis failed:");
   console.error(error);
 });

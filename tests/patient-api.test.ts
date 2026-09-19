@@ -3,16 +3,21 @@ import test from "node:test";
 import patientExport from "../vthacks-openemr/patients.json" with { type: "json" };
 import { getPatientById, getPatients, parsePatientExport } from "../src/data/patient-api.ts";
 
-test("the patient list is the complete export in source order, without generated clinical fields", async () => {
+test("the patient list preserves the complete OpenEMR export in source order", async () => {
   assert.deepEqual(
     await getPatients(),
     patientExport.map((record) => ({
       patient_id: String(record.id),
+
       name: record.name,
       dob: record.dob,
       sex: record.sex,
-      conditions: record.conditions,
-      medications: record.medications,
+
+      conditions: record.conditions ?? [],
+      medications: record.medications ?? [],
+
+      observations: record.observations ?? [],
+      visit_history: record.visit_history ?? [],
     })),
   );
 });

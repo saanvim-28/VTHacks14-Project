@@ -28,15 +28,26 @@ export interface SignificantObservationChange extends ObservationChange {
   significanceScore: number;
 }
 
+/**
+ * Creates a normalized key so observations with slightly different
+ * capitalization/spacing are grouped together.
+ *
+ * Example:
+ * "HbA1c" and " hba1c " -> "hba1c"
+ */
 function getObservationKey(observation: Observation): string {
   return observation.type.trim().toLowerCase();
 }
 
+/**
+ * Detects changes between the two most recent measurements
+ * for each observation type belonging to a patient.
+ */
 export function detectObservationChanges(patient: OpenEMRPatient): ObservationChange[] {
   const grouped = new Map<string, Observation[]>();
 
-  // Group observations by measurement type
-  for (const observation of patient.observations ?? []) {
+  // Group observations by measurement type.
+  for (const observation of patient.observations) {
     const key = getObservationKey(observation);
 
     const existing = grouped.get(key) ?? [];
@@ -49,18 +60,18 @@ export function detectObservationChanges(patient: OpenEMRPatient): ObservationCh
   const changes: ObservationChange[] = [];
 
   for (const observations of grouped.values()) {
-    // Can't detect change without two measurements
+    // We need at least two measurements to calculate a change.
     if (observations.length < 2) {
       continue;
     }
 
-    // Sort oldest -> newest
+    // Sort oldest -> newest.
     const sorted = [...observations].sort(
       (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
     );
 
+    // Compare the two most recent measurements.
     const previous = sorted[sorted.length - 2];
-
     const current = sorted[sorted.length - 1];
 
     if (!previous || !current) {
@@ -84,7 +95,8 @@ export function detectObservationChanges(patient: OpenEMRPatient): ObservationCh
     }
 
     changes.push({
-      patientId: String(patient.id),
+      // OpenEMRPatient now uses patient_id as its canonical ID.
+      patientId: patient.patient_id,
 
       observationType: current.type,
 
@@ -106,6 +118,12 @@ export function detectObservationChanges(patient: OpenEMRPatient): ObservationCh
   return changes;
 }
 
+/**
+ * Converts the size of an observation change into a simple
+ * significance score.
+ *
+ * This is deliberately rule-based for the MVP.
+ */
 function calculateChangeSignificance(change: ObservationChange): {
   significance: ChangeSignificance;
   score: number;
@@ -138,6 +156,10 @@ function calculateChangeSignificance(change: ObservationChange): {
   };
 }
 
+/**
+ * Returns only observation changes that are significant enough
+ * to contribute to the clinical-context/population analysis.
+ */
 export function detectSignificantChanges(patient: OpenEMRPatient): SignificantObservationChange[] {
   return detectObservationChanges(patient)
     .map((change) => {

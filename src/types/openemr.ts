@@ -11,14 +11,23 @@ export interface Observation {
   date: string;
 }
 
+/**
+ * Canonical patient model used throughout the application.
+ *
+ * patient_id is the normalized string ID used by the frontend/routes.
+ * OpenEMR may originally provide the ID as a number or string,
+ * but patient-api.ts converts it to this format.
+ */
 export interface OpenEMRPatient {
-  id: number;
+  patient_id: string;
+
   name: string;
-  dob: string;
-  sex: string;
+  dob: string | null;
+  sex: string | null;
 
   conditions: string[];
   medications: string[];
+
   observations: Observation[];
   visit_history: VisitHistory[];
 }
