@@ -118,5 +118,126 @@
         "notes": "Patient reported feeling tired throughout the day; scheduled thyroid panel."
       }
     ]
+  },
+  {
+    "id": 6,
+    "name": "David Wilson",
+    "dob": "2026-09-19",
+    "sex": "Male",
+    "conditions": [
+      "Osteoarthritis"
+    ],
+    "medications": [
+      "Celecoxib 200mg"
+    ],
+    "visit_history": [
+      {
+        "date": "2026-08-14",
+        "reason": "Chronic joint pain and stiffness in both knees.",
+        "notes": "X-rays showed early joint space narrowing. Prescribed Celecoxib 200mg."
+      },
+      {
+        "date": "2026-04-02",
+        "reason": "Right knee discomfort after minor strain.",
+        "notes": "Recommended physical therapy and low-impact exercises."
+      }
+    ]
+  },
+  {
+    "id": 7,
+    "name": "Emily Davis",
+    "dob": "2026-09-19",
+    "sex": "Female",
+    "conditions": [
+      "Major Depressive Disorder"
+    ],
+    "medications": [
+      "Sertraline 50mg"
+    ],
+    "visit_history": [
+      {
+        "date": "2026-08-28",
+        "reason": "Persistent low mood and loss of interest in daily activities.",
+        "notes": "Evaluated and started on Sertraline 50mg with a referral for counseling."
+      },
+      {
+        "date": "2026-05-20",
+        "reason": "Sleep disturbances and anxiety symptoms.",
+        "notes": "Discussed sleep hygiene and coping mechanisms."
+      }
+    ]
+  },
+  {
+    "id": 8,
+    "name": "James Martinez",
+    "dob": "2026-09-19",
+    "sex": "Male",
+    "conditions": [
+      "Chronic Kidney Disease"
+    ],
+    "medications": [
+      "Furosemide 20mg"
+    ],
+    "visit_history": [
+      {
+        "date": "2026-09-05",
+        "reason": "Lower extremity swelling and declining eGFR levels.",
+        "notes": "Adjusted fluid intake goals and prescribed Furosemide 20mg."
+      },
+      {
+        "date": "2026-03-22",
+        "reason": "Routine renal function monitoring.",
+        "notes": "Noted stage 3 chronic kidney disease progression markers; requested nephrology consult."
+      }
+    ]
+  },
+  {
+    "id": 9,
+    "name": "Sophia Anderson",
+    "dob": "2026-09-19",
+    "sex": "Female",
+    "conditions": [
+      "Migraine"
+    ],
+    "medications": [
+      "Sumatriptan 50mg"
+    ],
+    "visit_history": [
+      {
+        "date": "2026-08-18",
+        "reason": "Frequent throbbing headaches accompanied by nausea and light sensitivity.",
+        "notes": "Diagnosed with acute migraines. Prescribed Sumatriptan 50mg as an abortive medication."
+      },
+      {
+        "date": "2026-02-28",
+        "reason": "Severe tension headaches lasting multiple days.",
+        "notes": "Advised on trigger tracking and prescribed mild NSAIDs."
+      }
+    ]
+  },
+  {
+    "id": 10,
+    "name": "Daniel Thomas",
+    "dob": "2026-09-19",
+    "sex": "Male",
+    "conditions": [
+      "Coronary Artery Disease"
+    ],
+    "medications": [
+      "Aspirin 81mg",
+      "Metoprolol 25mg"
+    ],
+    "visit_history": [
+      {
+        "date": "2026-08-30",
+        "reason": "Exertional chest tightness and shortness of breath.",
+        "notes": "Cardiology stress test confirmed stable coronary artery disease. Started on Aspirin and Metoprolol."
+      },
+      {
+        "date": "2026-01-05",
+        "reason": "Routine cardiac risk factor assessment.",
+        "notes": "Noted family history of heart disease and borderline blood pressure."
+      }
+    ]
   }
 ]
