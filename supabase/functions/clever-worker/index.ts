@@ -1,35 +1,92 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { withSupabase } from "jsr:@supabase/server@^1";
 
-console.info("embed-pharma-content started");
+console.info("clever-worker started");
+
+// ======================================================
+// CONFIG
+// ======================================================
+
+const OPENROUTER_EMBEDDING_MODEL = "liquid/lfm-2.5-embedding-350m:free";
+
+// ======================================================
+// CREATE OPENROUTER EMBEDDING
+// ======================================================
+
+async function createEmbedding(text: string, apiKey: string): Promise<number[]> {
+  const response = await fetch("https://openrouter.ai/api/v1/embeddings", {
+    method: "POST",
+
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+
+    body: JSON.stringify({
+      model: OPENROUTER_EMBEDDING_MODEL,
+      input: text,
+    }),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    console.error("OpenRouter embedding error:", response.status, data);
+
+    throw new Error(`OpenRouter embedding failed: ${response.status}`);
+  }
+
+  const embedding = data.data?.[0]?.embedding;
+
+  if (!Array.isArray(embedding)) {
+    throw new Error("OpenRouter did not return a valid embedding.");
+  }
+
+  if (embedding.length !== 1024) {
+    throw new Error(`Expected a 1024-dimensional embedding, but received ${embedding.length}.`);
+  }
+
+  return embedding;
+}
+
+// ======================================================
+// EDGE FUNCTION
+// ======================================================
 
 export default {
   fetch: withSupabase(
-    { auth: ["publishable", "secret"] },
+    {
+      auth: ["publishable", "secret"],
+    },
 
     async (_req, ctx) => {
       try {
-        // -----------------------------
-        // 1. Get Gemini API key
-        // -----------------------------
-        const geminiKey = Deno.env.get("gem_stacked_up_KEY");
+        // ==================================================
+        // 1. GET OPENROUTER API KEY
+        // ==================================================
 
-        if (!geminiKey) {
+        const openRouterKey = Deno.env.get("OPENROUTER_API_KEY");
+
+        if (!openRouterKey) {
           return Response.json(
-            { success: false, error: "gem_stacked_up_KEY is missing" },
-            { status: 500 }
+            {
+              success: false,
+              error: "OPENROUTER_API_KEY is missing",
+            },
+            {
+              status: 500,
+            },
           );
         }
 
-        // -----------------------------
-        // 2. Get pharma records
-        // that don't have embeddings
-        // -----------------------------
-        const { data: records, error: selectError } =
-          await ctx.supabaseAdmin
-            .from("pharma_content")
-            .select("*")
-            .is("embedding", null);
+        // ==================================================
+        // 2. GET RECORDS THAT NEED EMBEDDINGS
+        // ==================================================
+
+        const { data: records, error: selectError } = await ctx.supabaseAdmin
+          .from("pharma_content")
+          .select("*")
+          .is("embedding", null);
 
         if (selectError) {
           throw selectError;
@@ -38,112 +95,101 @@ export default {
         if (!records || records.length === 0) {
           return Response.json({
             success: true,
+
             message: "All pharma records already have embeddings.",
-            embedded_count: 0
+
+            embedded_count: 0,
           });
         }
 
+        console.log(`Found ${records.length} pharma records requiring embeddings.`);
+
         let embeddedCount = 0;
 
-        // -----------------------------
-        // 3. Process each pharma record
-        // -----------------------------
-        for (const record of records) {
+        // ==================================================
+        // 3. PROCESS EACH RECORD
+        //
+        // Sequential processing prevents a large burst of
+        // OpenRouter requests.
+        // ==================================================
 
-          // Turn the database row into useful searchable text
+        for (const record of records) {
           const embeddingText = `
-Product: ${record.product_name}
-Therapeutic area: ${record.therapeutic_area}
-Indication: ${record.indication}
+Product: ${record.product_name ?? ""}
+Therapeutic area: ${record.therapeutic_area ?? ""}
+Indication: ${record.indication ?? ""}
 Clinical topics: ${
-  Array.isArray(record.clinical_topics)
-    ? record.clinical_topics.join(", ")
-    : record.clinical_topics ?? ""
-}
-Title: ${record.title}
-Content: ${record.content}
+            Array.isArray(record.clinical_topics)
+              ? record.clinical_topics.join(", ")
+              : (record.clinical_topics ?? "")
+          }
+Title: ${record.title ?? ""}
+Content: ${record.content ?? ""}
           `.trim();
 
-          // -----------------------------
-          // 4. Ask Gemini for embedding
-          // -----------------------------
-          const geminiResponse = await fetch(
-            "https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-2:embedContent",
-            {
-              method: "POST",
+          console.log(`Generating embedding for pharma record ${record.id}...`);
 
-              headers: {
-                "x-goog-api-key": geminiKey,
-                "Content-Type": "application/json"
-              },
+          // ==================================================
+          // 4. GENERATE OPENROUTER EMBEDDING
+          // ==================================================
 
-              body: JSON.stringify({
-                content: {
-                  parts: [
-                    {
-                      text: embeddingText
-                    }
-                  ]
-                },
+          const embedding = await createEmbedding(embeddingText, openRouterKey);
 
-                output_dimensionality: 1536
-              })
-            }
+          console.log(
+            `Generated ${embedding.length}-dimensional embedding for record ${record.id}.`,
           );
 
-          const geminiData = await geminiResponse.json();
+          // ==================================================
+          // 5. SAVE EMBEDDING
+          // ==================================================
 
-          if (!geminiResponse.ok) {
-            throw new Error(
-              `Gemini error for ${record.product_name}: ${
-                JSON.stringify(geminiData)
-              }`
-            );
-          }
-
-          const embedding = geminiData.embedding.values;
-
-          // -----------------------------
-          // 5. Save embedding in Supabase
-          // -----------------------------
-          const { error: updateError } =
-            await ctx.supabaseAdmin
-              .from("pharma_content")
-              .update({
-                embedding: embedding
-              })
-              .eq("id", record.id);
+          const { error: updateError } = await ctx.supabaseAdmin
+            .from("pharma_content")
+            .update({
+              embedding,
+            })
+            .eq("id", record.id);
 
           if (updateError) {
             throw updateError;
           }
 
           embeddedCount++;
+
+          console.log(`Saved embedding for pharma record ${record.id}.`);
         }
 
-        // -----------------------------
-        // 6. Finished
-        // -----------------------------
+        // ==================================================
+        // 6. FINISHED
+        // ==================================================
+
         return Response.json({
           success: true,
+
           message: "Pharma embeddings generated successfully.",
-          embedded_count: embeddedCount
+
+          embedded_count: embeddedCount,
+
+          total_records: records.length,
+
+          model: OPENROUTER_EMBEDDING_MODEL,
+
+          dimensions: 1024,
         });
-
       } catch (error) {
-
-        console.error(error);
+        console.error("clever-worker error:", error);
 
         return Response.json(
           {
             success: false,
-            error: error instanceof Error
-              ? error.message
-              : String(error)
+
+            error: error instanceof Error ? error.message : String(error),
           },
-          { status: 500 }
+          {
+            status: 500,
+          },
         );
       }
-    }
-  )
+    },
+  ),
 };

@@ -1,116 +1,47 @@
-import { GoogleGenAI } from "@google/genai";
-
 import type { AIClinicalAnalysisInput, AIClinicalAnalysisResult } from "./types";
-
-import { CLINICAL_ANALYSIS_SYSTEM_PROMPT } from "./prompts";
 
 export async function analyzeClinicalDataWithAI(
   input: AIClinicalAnalysisInput,
 ): Promise<AIClinicalAnalysisResult> {
-  const apiKey = process.env["GEMINI_API_KEY"];
+  const url = import.meta.env["VITE_SUPABASE_URL"]?.trim().replace(/\/$/, "");
 
-  if (!apiKey) {
-    throw new Error("GEMINI_API_KEY is missing. Add it to your environment variables.");
+  const key = (
+    import.meta.env["VITE_SUPABASE_PUBLISHABLE_KEY"] ?? import.meta.env["VITE_SUPABASE_ANON_KEY"]
+  )?.trim();
+
+  if (!url || !key) {
+    throw new Error(
+      "Supabase is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY.",
+    );
   }
 
-  const ai = new GoogleGenAI({
-    apiKey,
-  });
+  const response = await fetch(`${url}/functions/v1/clinical-reasoning`, {
+    method: "POST",
 
-  const responseSchema = {
-    type: "object",
-
-    properties: {
-      summary: {
-        type: "string",
-      },
-
-      insights: {
-        type: "array",
-
-        items: {
-          type: "object",
-
-          properties: {
-            contextId: {
-              type: "string",
-            },
-
-            clinicalContext: {
-              type: "string",
-            },
-
-            priority: {
-              type: "string",
-              enum: ["HIGH", "MEDIUM", "LOW"],
-            },
-
-            explanation: {
-              type: "string",
-            },
-
-            supportingEvidence: {
-              type: "array",
-              items: {
-                type: "string",
-              },
-            },
-
-            affectedPatients: {
-              type: "array",
-              items: {
-                type: "string",
-              },
-            },
-
-            confidence: {
-              type: "number",
-            },
-          },
-
-          required: [
-            "contextId",
-            "clinicalContext",
-            "priority",
-            "explanation",
-            "supportingEvidence",
-            "affectedPatients",
-            "confidence",
-          ],
-        },
-      },
+    headers: {
+      "Content-Type": "application/json",
+      apikey: key,
+      Authorization: `Bearer ${key}`,
     },
 
-    required: ["summary", "insights"],
-  };
-
-  const response = await ai.models.generateContent({
-    model: "gemini-3.5-flash-lite",
-
-    contents: `
-Analyze the following structured clinical data.
-
-CLINICAL DATA:
-
-${JSON.stringify(input, null, 2)}
-`,
-
-    config: {
-      systemInstruction: CLINICAL_ANALYSIS_SYSTEM_PROMPT,
-
-      responseMimeType: "application/json",
-
-      responseSchema,
-    },
+    body: JSON.stringify({
+      input,
+    }),
   });
 
-  const text = response.text;
+  const payload = await response.json();
 
-  if (!text) {
-    throw new Error("Gemini returned an empty response.");
+  if (!response.ok) {
+    throw new Error(payload.error || `Clinical reasoning failed with status ${response.status}.`);
   }
 
-  const result = JSON.parse(text) as AIClinicalAnalysisResult;
+  if (payload.error) {
+    throw new Error(payload.error);
+  }
 
-  return result;
+  if (!payload.analysis) {
+    throw new Error("Clinical reasoning returned no analysis.");
+  }
+
+  return payload.analysis as AIClinicalAnalysisResult;
 }
