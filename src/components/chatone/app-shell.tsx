@@ -1,6 +1,15 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronDown, ChevronRight, Database, LayoutList, Menu, Users, X } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronRight,
+  Database,
+  LayoutList,
+  Menu,
+  Sparkles,
+  Volume2,
+  X,
+} from "lucide-react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { patientsQuery } from "@/data/queries";
 import { cn } from "@/lib/utils";
@@ -8,7 +17,6 @@ import { cn } from "@/lib/utils";
 export function AppShell({ children }: { children: React.ReactNode }) {
   const path = useRouterState({ select: (state) => state.location.pathname });
   const { data: patients, isError } = useQuery(patientsQuery());
-  const [directoryOpen, setDirectoryOpen] = useState(true);
   const [sourceOpen, setSourceOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const currentPatient = patients?.find(
@@ -67,42 +75,24 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <span>Patient queue</span>
             {patients && <span className="nav-count">{patients.length}</span>}
           </Link>
-          <button
-            className="nav-item directory-toggle"
-            aria-expanded={directoryOpen}
-            aria-controls="patient-directory"
-            onClick={() => setDirectoryOpen((value) => !value)}
+          <Link
+            to="/matches"
+            className={cn("nav-item", path === "/matches" && "nav-active")}
+            onClick={closeMenu}
+            aria-current={path === "/matches" ? "page" : undefined}
           >
-            <Users size={18} />
-            <span>Patient directory</span>
-            <ChevronDown
-              size={14}
-              className={cn("directory-chevron", directoryOpen && "is-open")}
-            />
-          </button>
-          {directoryOpen && (
-            <div className="patient-directory" id="patient-directory">
-              {patients?.map((patient) => (
-                <Link
-                  key={patient.patient_id}
-                  to="/patients/$patientId"
-                  params={{ patientId: patient.patient_id }}
-                  className={cn(
-                    "directory-patient",
-                    currentPatient?.patient_id === patient.patient_id && "directory-patient-active",
-                  )}
-                  aria-current={
-                    currentPatient?.patient_id === patient.patient_id ? "page" : undefined
-                  }
-                  onClick={closeMenu}
-                >
-                  <span className="directory-dot" />
-                  {patient.name}
-                </Link>
-              ))}
-              {isError && <p className="directory-message">Records unavailable</p>}
-            </div>
-          )}
+            <Sparkles size={18} />
+            <span>Clinical matches</span>
+          </Link>
+          <Link
+            to="/briefings"
+            className={cn("nav-item", path === "/briefings" && "nav-active")}
+            onClick={closeMenu}
+            aria-current={path === "/briefings" ? "page" : undefined}
+          >
+            <Volume2 size={18} />
+            <span>60-second briefings</span>
+          </Link>
         </nav>
         <div className="sidebar-bottom">
           <button

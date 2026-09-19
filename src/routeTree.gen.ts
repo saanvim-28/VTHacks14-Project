@@ -10,6 +10,8 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as BriefingsRouteImport } from './routes/briefings'
+import { Route as MatchesRouteImport } from './routes/matches'
 import { Route as PatientsPatientIdRouteImport } from './routes/patients.$patientId'
 import { Route as PatientsPatientIdIndexRouteImport } from './routes/patients.$patientId.index'
 import { Route as PatientsPatientIdBriefingRouteImport } from './routes/patients.$patientId.briefing'
@@ -18,6 +20,16 @@ import { Route as PatientsPatientIdInformationRouteImport } from './routes/patie
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BriefingsRoute = BriefingsRouteImport.update({
+  id: '/briefings',
+  path: '/briefings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MatchesRoute = MatchesRouteImport.update({
+  id: '/matches',
+  path: '/matches',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PatientsPatientIdRoute = PatientsPatientIdRouteImport.update({
@@ -45,6 +57,8 @@ const PatientsPatientIdInformationRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/briefings': typeof BriefingsRoute
+  '/matches': typeof MatchesRoute
   '/patients/$patientId': typeof PatientsPatientIdRouteWithChildren
   '/patients/$patientId/briefing': typeof PatientsPatientIdBriefingRoute
   '/patients/$patientId/information': typeof PatientsPatientIdInformationRoute
@@ -52,6 +66,8 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/briefings': typeof BriefingsRoute
+  '/matches': typeof MatchesRoute
   '/patients/$patientId/briefing': typeof PatientsPatientIdBriefingRoute
   '/patients/$patientId/information': typeof PatientsPatientIdInformationRoute
   '/patients/$patientId': typeof PatientsPatientIdIndexRoute
@@ -59,6 +75,8 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/briefings': typeof BriefingsRoute
+  '/matches': typeof MatchesRoute
   '/patients/$patientId': typeof PatientsPatientIdRouteWithChildren
   '/patients/$patientId/briefing': typeof PatientsPatientIdBriefingRoute
   '/patients/$patientId/information': typeof PatientsPatientIdInformationRoute
@@ -68,6 +86,8 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/briefings'
+    | '/matches'
     | '/patients/$patientId'
     | '/patients/$patientId/briefing'
     | '/patients/$patientId/information'
@@ -75,12 +95,16 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/briefings'
+    | '/matches'
     | '/patients/$patientId/briefing'
     | '/patients/$patientId/information'
     | '/patients/$patientId'
   id:
     | '__root__'
     | '/'
+    | '/briefings'
+    | '/matches'
     | '/patients/$patientId'
     | '/patients/$patientId/briefing'
     | '/patients/$patientId/information'
@@ -89,6 +113,8 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  BriefingsRoute: typeof BriefingsRoute
+  MatchesRoute: typeof MatchesRoute
   PatientsPatientIdRoute: typeof PatientsPatientIdRouteWithChildren
 }
 
@@ -99,6 +125,20 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/briefings': {
+      id: '/briefings'
+      path: '/briefings'
+      fullPath: '/briefings'
+      preLoaderRoute: typeof BriefingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/matches': {
+      id: '/matches'
+      path: '/matches'
+      fullPath: '/matches'
+      preLoaderRoute: typeof MatchesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/patients/$patientId': {
@@ -149,6 +189,8 @@ const PatientsPatientIdRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  BriefingsRoute: BriefingsRoute,
+  MatchesRoute: MatchesRoute,
   PatientsPatientIdRoute: PatientsPatientIdRouteWithChildren,
 }
 export const routeTree = rootRouteImport
