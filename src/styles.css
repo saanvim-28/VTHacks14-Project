@@ -6332,3 +6332,181 @@ textarea {
   background: #7a2e4d !important;
   border-color: #7a2e4d !important;
 }
+
+/* Clinical knowledge match workspace */
+.info-header > div:first-child {
+  display: grid;
+  gap: 10px;
+}
+.info-header > div:first-child > p {
+  margin: 0;
+  color: #34574a !important;
+  font-weight: 600;
+}
+.information-list {
+  display: grid;
+  gap: 16px;
+}
+.information-card {
+  display: grid;
+  grid-template-columns: 80px 1fr;
+  overflow: hidden;
+  background: #f7f2e7;
+  border: 1px solid #b7d5c5;
+  border-radius: 20px;
+  box-shadow: 0 2px 8px rgba(24, 53, 43, 0.06);
+}
+.information-index {
+  display: grid;
+  place-items: start center;
+  padding-top: 34px;
+  background: #d8eee3;
+  color: #245b46;
+  font:
+    800 1rem/1 "IBM Plex Mono",
+    monospace;
+}
+.information-body {
+  padding: 30px;
+}
+.information-card-topline {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+.information-card h2 {
+  margin: 0;
+  color: #18352b !important;
+  font:
+    800 1.45rem/1.2 Fraunces,
+    Georgia,
+    serif;
+}
+.information-source {
+  margin: 8px 0 0;
+  color: #34574a !important;
+  font-weight: 600;
+}
+.information-score {
+  flex: none;
+  padding: 9px 12px;
+  border: 1px solid #a5cbbc;
+  border-radius: 999px;
+  background: #d8eee3;
+  color: #245b46;
+  font:
+    700 0.75rem/1 "IBM Plex Mono",
+    monospace;
+}
+.information-reasons {
+  margin-top: 24px;
+  color: #18352b;
+}
+.information-reasons summary {
+  cursor: pointer;
+  color: #18352b;
+  font-weight: 800;
+}
+.information-reasons ul {
+  display: grid;
+  gap: 10px;
+  margin: 14px 0 0;
+  padding: 16px 20px 16px 38px;
+  border-radius: 12px;
+  background: #e5f0ea;
+  color: #34574a;
+  font-weight: 600;
+}
+.information-reasons li::marker {
+  color: #3e8368;
+}
+.information-actions,
+.briefing-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  margin-top: 24px;
+}
+.briefing-action,
+.save-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 11px 18px;
+  border: 1px solid #7a2e4d;
+  border-radius: 999px;
+  background: #7a2e4d;
+  color: #fff8f0 !important;
+  font-weight: 800;
+  text-decoration: none;
+}
+.briefing-action:hover,
+.briefing-action:focus-visible {
+  background: #5e2038;
+  border-color: #5e2038;
+}
+.save-action {
+  border-color: #b7d5c5;
+  background: #f7f2e7;
+  color: #245b46 !important;
+  cursor: pointer;
+}
+.save-action:hover,
+.save-action:focus-visible {
+  background: #d8eee3;
+  border-color: #7fb69b;
+}
+.briefing-card {
+  padding: 40px;
+  border: 1px solid #b7d5c5;
+  border-radius: 22px;
+  background: #e5f0ea;
+  color: #18352b;
+}
+.briefing-card h2 {
+  margin: 14px 0 10px;
+  color: #18352b;
+  font:
+    800 2rem/1.2 Fraunces,
+    Georgia,
+    serif;
+}
+.briefing-card p {
+  max-width: 760px;
+  margin: 0;
+  color: #34574a;
+  font-size: 1.05rem;
+  font-weight: 600;
+  line-height: 1.7;
+}
+.briefing-progress {
+  height: 8px;
+  margin-top: 28px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #b7d5c5;
+}
+.briefing-progress span {
+  display: block;
+  width: 68%;
+  height: 100%;
+  border-radius: inherit;
+  background: #3e8368;
+}
+@media (max-width: 700px) {
+  .information-card {
+    grid-template-columns: 52px 1fr;
+  }
+  .information-body {
+    padding: 22px;
+  }
+  .information-card-topline {
+    display: grid;
+  }
+  .briefing-card {
+    padding: 26px;
+  }
+}
