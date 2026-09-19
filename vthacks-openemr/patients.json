@@ -9,6 +9,18 @@
     ],
     "medications": [
       "Lisinopril 10mg"
+    ],
+    "visit_history": [
+      {
+        "date": "2026-08-10",
+        "reason": "Routine checkup and elevated blood pressure reading.",
+        "notes": "Blood pressure recorded at 140/90. Started on Lisinopril 10mg."
+      },
+      {
+        "date": "2026-05-12",
+        "reason": "Mild headaches and dizziness.",
+        "notes": "Advised to monitor blood pressure daily and reduce sodium intake."
+      }
     ]
   },
   {
@@ -21,6 +33,18 @@
     ],
     "medications": [
       "Metformin 500mg"
+    ],
+    "visit_history": [
+      {
+        "date": "2026-09-01",
+        "reason": "Elevated HbA1c results from lab work.",
+        "notes": "Prescribed Metformin 500mg and provided dietary counseling."
+      },
+      {
+        "date": "2026-04-15",
+        "reason": "Annual physical examination.",
+        "notes": "Fasting blood glucose flagged as borderline high; ordered follow-up labs."
+      }
     ]
   },
   {
@@ -33,6 +57,18 @@
     ],
     "medications": [
       "Albuterol Inhaler"
+    ],
+    "visit_history": [
+      {
+        "date": "2026-08-20",
+        "reason": "Wheezing and shortness of breath during physical activity.",
+        "notes": "Diagnosed with mild persistent asthma. Prescribed Albuterol Inhaler as needed."
+      },
+      {
+        "date": "2026-03-10",
+        "reason": "Seasonal allergies and minor cough.",
+        "notes": "Recommended OTC antihistamines; lungs clear upon auscultation."
+      }
     ]
   },
   {
@@ -45,6 +81,18 @@
     ],
     "medications": [
       "Atorvastatin 20mg"
+    ],
+    "visit_history": [
+      {
+        "date": "2026-08-05",
+        "reason": "Routine lipid panel review.",
+        "notes": "High LDL cholesterol levels observed. Initiated Atorvastatin 20mg."
+      },
+      {
+        "date": "2026-02-14",
+        "reason": "General wellness checkup.",
+        "notes": "Ordered baseline metabolic and lipid panels."
+      }
     ]
   },
   {
@@ -57,6 +105,18 @@
     ],
     "medications": [
       "Levothyroxine 50mcg"
+    ],
+    "visit_history": [
+      {
+        "date": "2026-07-22",
+        "reason": "Persistent fatigue, sluggishness, and minor weight gain.",
+        "notes": "TSH levels elevated. Started on Levothyroxine 50mcg."
+      },
+      {
+        "date": "2026-01-11",
+        "reason": "Routine follow-up for energy levels.",
+        "notes": "Patient reported feeling tired throughout the day; scheduled thyroid panel."
+      }
     ]
   }
 ]
