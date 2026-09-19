@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState } from "react";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { Headphones } from "lucide-react";
 import { patientQuery } from "@/data/queries";
 import {
   DataUnavailable,
@@ -21,6 +21,7 @@ export const Route = createFileRoute("/patients/$patientId/briefing")({
 function BriefingPage() {
   const { patientId } = Route.useParams();
   const { data: patient } = useSuspenseQuery(patientQuery(patientId));
+  const [playing, setPlaying] = useState(false);
   if (!patient)
     return (
       <main className="page-shell">
@@ -33,14 +34,43 @@ function BriefingPage() {
         ← Back to patient
       </Link>
       <header className="info-header">
-        <h1>Clinical briefing</h1>
+        <div>
+          <span className="eyebrow">Clinical knowledge match</span>
+          <h1>60-second clinical briefing</h1>
+          <p>A concise review prepared from the imported OpenEMR record.</p>
+        </div>
         <PatientContext name={patient.name} id={patient.patient_id} />
       </header>
-      <div className="empty-state">
-        <Headphones className="size-9 text-muted-foreground" />
-        <h2>No briefing available</h2>
-        <p>This OpenEMR export does not include briefing transcripts or audio recordings.</p>
-      </div>
+      <section className="briefing-card" aria-label="60-second clinical briefing">
+        <span className="eyebrow">Illustrative demo</span>
+        <h2>{patient.name}'s review snapshot</h2>
+        <p>
+          The imported record includes {patient.conditions.join(", ") || "no recorded conditions"}{" "}
+          and {patient.medications.join(", ") || "no recorded medications"}. Review the latest
+          observations, confirm the medication list, and document any change before the next
+          care-team handoff.
+        </p>
+        <div className="briefing-progress" aria-hidden="true">
+          <span />
+        </div>
+        <div className="briefing-actions">
+          <button
+            className="briefing-action"
+            type="button"
+            onClick={() => setPlaying((value) => !value)}
+          >
+            {playing ? "Pause briefing" : "Play 60-second briefing"}{" "}
+            <span aria-hidden="true">{playing ? "Ⅱ" : "▶"}</span>
+          </button>
+          <Link
+            className="save-action"
+            to="/patients/$patientId/information"
+            params={{ patientId }}
+          >
+            Back to relevant information
+          </Link>
+        </div>
+      </section>
     </main>
   );
 }

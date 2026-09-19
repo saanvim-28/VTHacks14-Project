@@ -81,6 +81,13 @@ function PatientDetail() {
           </div>
         </div>
         <div className="patient-hero-actions">
+          <Link
+            className="secondary-action"
+            to="/patients/$patientId/information"
+            params={{ patientId }}
+          >
+            Find relevant information
+          </Link>
           <a className="primary-action" href="#clinical-observations">
             Review observations
             <ArrowDown size={14} />

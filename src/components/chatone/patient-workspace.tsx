@@ -226,7 +226,7 @@ export function PatientWorkspace({ patientId }: { patientId: string }) {
               <header className="record-panel-heading">
                 <div>
                   <CalendarDays size={17} />
-                  <h2>Encounter timeline</h2>
+                  <h2>Clinical timeline</h2>
                 </div>
                 <DemoLabel />
               </header>
