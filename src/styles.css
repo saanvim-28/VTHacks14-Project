@@ -6510,3 +6510,359 @@ textarea {
     padding: 26px;
   }
 }
+
+/* Sidebar feature tabs and workspace landing pages */
+.nav-item svg {
+  color: currentColor !important;
+}
+.workspace-feature-page {
+  display: grid;
+  gap: 24px;
+}
+.feature-header {
+  display: grid;
+  gap: 10px;
+  max-width: 820px;
+}
+.feature-header h1 {
+  margin: 0;
+}
+.feature-header p {
+  margin: 0;
+  max-width: 700px;
+  color: #34574a !important;
+  font-weight: 600;
+  font-size: 1.08rem;
+  line-height: 1.6;
+}
+.feature-summary {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  padding: 28px 32px;
+  border: 1px solid #b7d5c5;
+  border-radius: 22px;
+  background: #12402f;
+  color: #f7f1e4;
+}
+.feature-summary strong {
+  color: #f7f1e4;
+  font:
+    800 3rem/1 Fraunces,
+    Georgia,
+    serif;
+}
+.feature-summary span {
+  color: #d8eee3;
+  font-weight: 800;
+}
+.feature-summary small {
+  margin-left: auto;
+  color: #b7d5c5;
+  font-weight: 600;
+}
+.feature-list {
+  display: grid;
+  gap: 12px;
+}
+.feature-row {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 20px;
+  padding: 24px;
+  border: 1px solid #b7d5c5;
+  border-radius: 18px;
+  background: #f7f2e7;
+}
+.feature-index {
+  color: #3e8368;
+  font:
+    800 1rem/1 "IBM Plex Mono",
+    monospace;
+}
+.feature-row h2 {
+  margin: 0;
+  color: #18352b !important;
+  font:
+    800 1.35rem/1.2 Fraunces,
+    Georgia,
+    serif;
+}
+.feature-row p {
+  margin: 6px 0 0;
+  color: #34574a !important;
+  font-weight: 600;
+}
+.feature-score,
+.feature-duration {
+  padding: 9px 12px;
+  border-radius: 999px;
+  background: #d8eee3;
+  color: #245b46;
+  font:
+    800 0.78rem/1 "IBM Plex Mono",
+    monospace;
+  white-space: nowrap;
+}
+.feature-link {
+  color: #7a2e4d !important;
+  font-weight: 800;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.feature-link:hover,
+.feature-link:focus-visible {
+  color: #5e2038 !important;
+  text-decoration: underline;
+}
+@media (max-width: 760px) {
+  .feature-summary {
+    display: grid;
+    gap: 8px;
+  }
+  .feature-summary small {
+    margin-left: 0;
+  }
+  .feature-row {
+    grid-template-columns: 42px 1fr;
+  }
+  .feature-score,
+  .feature-duration,
+  .feature-link {
+    grid-column: 2;
+    justify-self: start;
+  }
+}
+
+/* Precision queue pass: crisp edges and explicit row rules. */
+.summary-card,
+.clinical-queue,
+.clinical-section,
+.record-panel,
+.record-hero,
+.observation-metric,
+.information-card,
+.feature-row,
+.briefing-card,
+.demo-disclosure,
+.workspace-label,
+.source-control,
+.source-details {
+  border-radius: 4px !important;
+}
+.nav-item,
+.queue-search,
+.queue-total,
+.record-status,
+.source-tag,
+.demo-label,
+.review-progress,
+.information-score,
+.feature-score,
+.feature-duration,
+.patient-monogram,
+.patient-hero-avatar,
+.source-record-number,
+.briefing-action,
+.save-action,
+.review-sample,
+.primary-action,
+.secondary-action,
+.user-avatar,
+.workspace-avatar {
+  border-radius: 4px !important;
+}
+.queue-header {
+  border-radius: 4px 4px 0 0 !important;
+}
+.queue-footer {
+  border-radius: 0 0 4px 4px !important;
+}
+.clinical-rows {
+  border-top: 1px solid #b7d5c5 !important;
+}
+.clinical-row,
+.clinical-row:nth-child(even) {
+  border-top: 1px solid #b7d5c5 !important;
+  border-bottom: 0 !important;
+}
+.clinical-row:first-child {
+  border-top: 0 !important;
+}
+.queue-columns {
+  border-bottom: 1px solid #9fc3b1 !important;
+}
+.clinical-row::before {
+  width: 4px !important;
+}
+
+/* Ensure every dark surface has accessible light text. */
+.sidebar,
+.sidebar strong,
+.sidebar small,
+.sidebar span,
+.sidebar a,
+.sidebar button,
+.sidebar p,
+.queue-header,
+.queue-header h2,
+.queue-header span,
+.queue-footer,
+.queue-footer span,
+.summary-card:first-child,
+.summary-card:first-child span,
+.summary-card:first-child strong,
+.summary-card:first-child small,
+.feature-summary,
+.feature-summary strong,
+.feature-summary span,
+.feature-summary small,
+.export-source,
+.export-source span {
+  color: #fff8f0 !important;
+}
+.sidebar .nav-item.nav-active,
+.sidebar .nav-item.nav-active span,
+.sidebar .nav-item.nav-active .nav-count {
+  color: #123b2c !important;
+}
+.sidebar .nav-item.nav-active .nav-count {
+  color: #fff8f0 !important;
+}
+.queue-header .queue-total {
+  color: #fff8f0 !important;
+}
+
+/* Green structural surfaces use square top edges. */
+.sidebar,
+.summary-card:first-child,
+.queue-header,
+.feature-summary,
+.queue-footer {
+  border-top-left-radius: 0 !important;
+  border-top-right-radius: 0 !important;
+}
+
+/* Overview cards share the same confident green treatment. */
+.summary-card,
+.summary-card:first-child {
+  background: #12402f !important;
+  border-color: #12402f !important;
+  color: #fff8f0 !important;
+}
+.summary-card span,
+.summary-card strong,
+.summary-card small,
+.summary-card:first-child span,
+.summary-card:first-child strong,
+.summary-card:first-child small {
+  color: #fff8f0 !important;
+}
+.summary-card .summary-icon,
+.summary-card:first-child .summary-icon {
+  background: #57a583 !important;
+  color: #123b2c !important;
+}
+
+/* The blue patient-queue header uses dark text for contrast. */
+.queue-header {
+  background: #7ac0d5 !important;
+  color: #18352b !important;
+}
+.queue-header h2,
+.queue-header span,
+.queue-header .queue-total {
+  color: #18352b !important;
+}
+.queue-header .queue-total {
+  background: #d8eee3 !important;
+}
+
+/* Restore the lighter sky-blue queue header treatment. */
+.queue-header {
+  background: #b9dce5 !important;
+  color: #18352b !important;
+}
+.queue-header h2,
+.queue-header span,
+.queue-header .queue-total {
+  color: #18352b !important;
+}
+.queue-header .queue-total {
+  background: #d8eee3 !important;
+}
+
+/* Queue surface follows the light blue clinical highlight. */
+.clinical-queue,
+.clinical-rows,
+.clinical-row,
+.clinical-row:nth-child(even) {
+  background: #e5f0ea !important;
+}
+.clinical-row:hover {
+  background: #d8eee3 !important;
+}
+
+/* Keep patient rows on their original warm surface; blue is header-only. */
+.clinical-queue,
+.clinical-rows,
+.clinical-row,
+.clinical-row:nth-child(even) {
+  background: #f7f2e7 !important;
+}
+.clinical-row:hover {
+  background: #edf5ef !important;
+}
+.queue-header {
+  background: #b9dce5 !important;
+}
+
+/* Match the reference card silhouette: square top corners, softened bottoms. */
+.summary-card,
+.summary-card:first-child,
+.feature-summary {
+  border-radius: 0 0 22px 22px !important;
+}
+
+/* Equal metric-card geometry across the overview row. */
+.queue-summary {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  align-items: stretch !important;
+}
+.queue-summary .summary-card,
+.queue-summary .summary-card:first-child {
+  width: 100% !important;
+  min-height: 320px !important;
+  height: 320px !important;
+  box-sizing: border-box !important;
+}
+@media (max-width: 900px) {
+  .queue-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+@media (max-width: 620px) {
+  .queue-summary {
+    grid-template-columns: 1fr !important;
+  }
+  .queue-summary .summary-card,
+  .queue-summary .summary-card:first-child {
+    height: auto !important;
+    min-height: 220px !important;
+  }
+}
+
+/* Keep the equal cards compact rather than oversized. */
+.queue-summary .summary-card,
+.queue-summary .summary-card:first-child {
+  min-height: 220px !important;
+  height: 220px !important;
+}
+@media (max-width: 620px) {
+  .queue-summary .summary-card,
+  .queue-summary .summary-card:first-child {
+    min-height: 180px !important;
+    height: 180px !important;
+  }
+}
