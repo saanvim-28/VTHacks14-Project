@@ -121,7 +121,7 @@ function BriefingPage() {
         <div>
           <span className="eyebrow">AI clinical analysis</span>
 
-          <h1>60-second clinical briefing</h1>
+          <h1>Clinical Briefing</h1>
 
           <p>
             A concise review prepared from the imported OpenEMR record and relevant clinical
@@ -289,8 +289,8 @@ function BriefingPage() {
       {/* ============================================= */}
 
       <div className="briefing-actions">
-        <Link className="save-action" to="/patients/$patientId/information" params={{ patientId }}>
-          Back to relevant information
+        <Link className="save-action" to="/patients/$patientId" params={{ patientId }}>
+          Back to patient
         </Link>
       </div>
     </main>

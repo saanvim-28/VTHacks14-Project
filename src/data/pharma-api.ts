@@ -26,7 +26,26 @@ export interface PharmaBatchResponse {
   successful: number;
   failed: number;
   patients: PatientPharmaAnalysis[];
+  top_content?: PharmaTopContentItem[];
+  top_content_briefing?: string;
   error?: string;
+}
+
+export interface PharmaTopContentItem {
+  id?: string | number;
+  product_name?: string;
+  therapeutic_area?: string;
+  indication?: string;
+  title?: string;
+  source?: string;
+  content?: string;
+  top_5_category?: "POPULATION" | "PRECISION";
+  top_5_reason?: string;
+  matched_patient_count?: number;
+  total_patient_count?: number;
+  population_match?: number;
+  average_similarity?: number;
+  max_similarity?: number;
 }
 
 function getConfig() {

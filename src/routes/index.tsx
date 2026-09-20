@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { ArrowUpRight, Pill, Stethoscope, Users } from "lucide-react";
 import { patientsQuery } from "@/data/queries";
+import { isPharmaSearchConfigured, searchPharmaForPatients } from "@/data/pharma-api";
 import { EmptyState, PageSkeleton, RouteError } from "@/components/chatone/shared";
 import { generateSpeech } from "@/lib/tts";
 import { playAudioBlob } from "@/lib/tts-player";
@@ -17,6 +18,12 @@ export const Route = createFileRoute("/")({
 
 function Overview() {
   const { data: patients } = useSuspenseQuery(patientsQuery());
+  const pharmaQuery = useQuery({
+    queryKey: ["pharma-search", "overview-top-five", patients.map((patient) => patient.patient_id)],
+    queryFn: () => searchPharmaForPatients(patients),
+    enabled: isPharmaSearchConfigured() && patients.length > 0,
+    staleTime: 5 * 60 * 1000,
+  });
   const [audioLoading, setAudioLoading] = useState(false);
   const [audioReady, setAudioReady] = useState(false);
   if (!patients.length)
@@ -37,6 +44,7 @@ function Overview() {
     (total, patient) => total + patient.visit_history.length,
     0,
   );
+  const topMatches = pharmaQuery.data?.top_content?.slice(0, 5) ?? [];
   const summary = `Overall patient panel synchronization complete. ${patients.length} patient files imported from OpenEMR with ${interactionCount} recent clinical interactions. Key findings indicate active management across the documented conditions and medications, with recent updates ready for provider review.`;
   async function playBriefing() {
     if (audioLoading) return;
@@ -98,10 +106,56 @@ function Overview() {
           </article>
         ))}
       </section>
+      <section className="overview-matches" aria-labelledby="overview-matches-title">
+        <header>
+          <div>
+            <span className="eyebrow">AI pharmaceutical matching</span>
+            <h2 id="overview-matches-title">Top 5 pharmaceutical matches across your patients</h2>
+            <p>
+              {pharmaQuery.data?.top_content_briefing ??
+                "Products and clinical resources are matched to the conditions, medications, and encounter context in the current patient panel."}
+            </p>
+          </div>
+        </header>
+        {pharmaQuery.isLoading && (
+          <p className="overview-matches-status">
+            Searching the connected pharmaceutical knowledge base…
+          </p>
+        )}
+        {pharmaQuery.isError && (
+          <p className="overview-matches-status">
+            Pharmaceutical matching is temporarily unavailable. Refresh this page to retry.
+          </p>
+        )}
+        {!pharmaQuery.isLoading && !pharmaQuery.isError && topMatches.length > 0 && (
+          <div className="overview-match-list">
+            {topMatches.map((match, index) => (
+              <article
+                className="overview-match-item"
+                key={`${match.id ?? match.product_name ?? match.title ?? "match"}-${index}`}
+              >
+                <span className="overview-match-rank">{String(index + 1).padStart(2, "0")}</span>
+                <div>
+                  <h3>{match.product_name ?? match.title ?? "Clinical resource"}</h3>
+                  <p>{match.therapeutic_area ?? match.indication ?? "Matched clinical context"}</p>
+                </div>
+                <span className="overview-match-patients">
+                  {match.matched_patient_count ?? 0} patients
+                </span>
+              </article>
+            ))}
+          </div>
+        )}
+        {!pharmaQuery.isLoading && !pharmaQuery.isError && topMatches.length === 0 && (
+          <p className="overview-matches-status">
+            No top matches have been returned for this patient panel yet.
+          </p>
+        )}
+      </section>
       <section className="overview-briefing" aria-labelledby="overview-briefing-title">
         <div className="overview-briefing-heading">
           <span className="eyebrow">AI clinical briefing</span>
-          <h2 id="overview-briefing-title">60-Second AI Clinical Briefing</h2>
+          <h2 id="overview-briefing-title">Clinical Briefing</h2>
         </div>
         <div className="overview-audio-row">
           <button

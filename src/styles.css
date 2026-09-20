@@ -7856,3 +7856,224 @@ body,
 .complete-patient-page .encounter-list li:not(:last-child)::after {
   left: 153px !important;
 }
+
+.overview-matches {
+  margin-top: 20px;
+  padding: 24px 28px;
+  border: 1px solid #c5d5cb;
+  border-left: 4px solid #7a2e4d;
+  border-radius: 14px;
+  background: #fbf8ef;
+}
+
+.overview-matches > header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.overview-matches > header > div {
+  width: 100%;
+}
+
+.overview-matches h2 {
+  margin: 7px 0 6px;
+  color: #12402f;
+  font-size: 22px;
+  line-height: 1.2;
+}
+
+.overview-matches header p {
+  max-width: none;
+  margin: 0;
+  color: #3e5d51;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.overview-matches-link {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 5px;
+  color: #6b2d4b !important;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.overview-match-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.overview-match-item {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  padding: 13px 0;
+  border-top: 1px solid #d8e3dc;
+}
+
+.overview-match-rank {
+  color: #7a2e4d;
+  font-family: Inter, sans-serif;
+  font-weight: 800;
+}
+
+.overview-match-item h3 {
+  margin: 0;
+  color: #12402f;
+  font-size: 16px;
+  line-height: 1.3;
+}
+
+.overview-match-item p {
+  margin: 4px 0 0;
+  color: #5c6b61;
+  font-size: 13px;
+}
+
+.overview-match-patients {
+  color: #3e8368;
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.overview-matches-status {
+  margin: 18px 0 0;
+  color: #5c6b61;
+  font-size: 14px;
+}
+
+@media (max-width: 760px) {
+  .overview-matches > header {
+    display: block;
+  }
+
+  .overview-matches-link {
+    margin-top: 14px;
+  }
+
+  .overview-match-item {
+    grid-template-columns: 30px minmax(0, 1fr);
+  }
+
+  .overview-match-patients {
+    grid-column: 2;
+  }
+}
+
+/* Patient queue rows: improve readability without changing the queue controls. */
+.queue-page .queue-columns {
+  font-size: 13px !important;
+  letter-spacing: 0.04em !important;
+}
+
+.queue-page .clinical-row {
+  min-height: 142px !important;
+  padding: 24px 28px !important;
+}
+
+.queue-page .patient-monogram {
+  width: 48px !important;
+  height: 48px !important;
+  font-size: 16px !important;
+}
+
+.queue-page .patient-identity h3 {
+  font-size: 20px !important;
+  line-height: 1.25 !important;
+}
+
+.queue-page .clinical-meta,
+.queue-page .patient-dob {
+  font-size: 14px !important;
+  line-height: 1.45 !important;
+}
+
+.queue-page .change-kicker {
+  font-size: 13px !important;
+  letter-spacing: 0.05em !important;
+}
+
+.queue-page .clinical-change h4 {
+  font-size: 17px !important;
+  line-height: 1.4 !important;
+}
+
+.queue-page .clinical-change p {
+  margin-top: 7px !important;
+  font-size: 15px !important;
+  line-height: 1.45 !important;
+}
+
+.queue-page .record-status {
+  font-size: 13px !important;
+}
+
+.queue-page .review-sample {
+  font-size: 15px !important;
+  line-height: 1.3 !important;
+}
+
+.queue-page .queue-footer {
+  font-size: 14px !important;
+}
+
+@media (max-width: 760px) {
+  .queue-page .clinical-row {
+    min-height: 0 !important;
+    padding: 20px !important;
+  }
+
+  .queue-page .clinical-change h4 {
+    font-size: 16px !important;
+  }
+}
+
+/* Keep overview metric cards wide, but reduce their vertical weight and remove the typewriter look. */
+.overview-page .queue-summary .summary-card,
+.overview-page .queue-summary .summary-card:first-child {
+  height: 175px !important;
+  min-height: 175px !important;
+  padding: 22px 28px !important;
+}
+
+.overview-page .queue-summary .summary-card,
+.overview-page .queue-summary .summary-card span,
+.overview-page .queue-summary .summary-card strong,
+.overview-page .queue-summary .summary-card small {
+  font-family: Fraunces, Georgia, serif !important;
+}
+
+.overview-page .queue-summary .summary-card > div {
+  gap: 8px !important;
+}
+
+.overview-page .queue-summary .summary-card span {
+  font-size: 15px !important;
+  line-height: 1.3 !important;
+}
+
+.overview-page .queue-summary .summary-card strong {
+  font-size: 40px !important;
+  line-height: 1 !important;
+}
+
+.overview-page .queue-summary .summary-card small {
+  max-width: 360px !important;
+  font-size: 14px !important;
+  line-height: 1.35 !important;
+}
+
+@media (max-width: 620px) {
+  .overview-page .queue-summary .summary-card,
+  .overview-page .queue-summary .summary-card:first-child {
+    height: 165px !important;
+    min-height: 165px !important;
+  }
+}

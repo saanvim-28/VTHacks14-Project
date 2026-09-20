@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { LayoutList, Menu, Sparkles, Volume2 } from "lucide-react";
+import { LayoutList, Menu, Volume2 } from "lucide-react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { patientsQuery } from "@/data/queries";
 import { cn } from "@/lib/utils";
@@ -54,15 +54,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <LayoutList size={18} />
               <span>Patient queue</span>
               {patients && <span className="nav-count">{patients.length}</span>}
-            </Link>
-            <Link
-              to="/matches"
-              className={cn("nav-item", path === "/matches" && "nav-active")}
-              onClick={() => setMobileOpen(false)}
-              aria-current={path === "/matches" ? "page" : undefined}
-            >
-              <Sparkles size={18} />
-              <span>Clinical Matches</span>
             </Link>
             <Link
               to="/briefings"

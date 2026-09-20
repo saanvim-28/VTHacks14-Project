@@ -49,7 +49,7 @@ function InformationPage() {
       <header className="info-header">
         <div>
           <span className="eyebrow">Clinical knowledge match</span>
-          <h1>Top 5 relevant information</h1>
+          <h1>Relevant Information</h1>
           <p>
             Ranked against {patient.name}'s conditions, medications, and available clinical context.
           </p>
@@ -109,7 +109,7 @@ function InformationPage() {
                     to="/patients/$patientId/briefing"
                     params={{ patientId }}
                   >
-                    60-second briefing <span aria-hidden="true">→</span>
+                    Briefing <span aria-hidden="true">→</span>
                   </Link>
                   <button
                     className="save-action"

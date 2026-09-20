@@ -143,10 +143,10 @@ export function PatientWorkspace({ patient }: PatientWorkspaceProps) {
           </div>
           <Link
             className="record-change-action"
-            to="/patients/$patientId/information"
+            to="/patients/$patientId/briefing"
             params={{ patientId: patient.patient_id }}
           >
-            Find relevant information <span aria-hidden="true">→</span>
+            Open clinical briefing <span aria-hidden="true">→</span>
           </Link>
         </section>
       )}

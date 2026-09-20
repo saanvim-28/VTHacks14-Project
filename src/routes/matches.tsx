@@ -105,10 +105,10 @@ function MatchesPage() {
               {score !== null && <span className="feature-score">{score}% match</span>}
               <Link
                 className="feature-link"
-                to="/patients/$patientId/information"
+                to="/patients/$patientId/briefing"
                 params={{ patientId: patient.patient_id }}
               >
-                Review matches →
+                Open briefing →
               </Link>
             </article>
           );
