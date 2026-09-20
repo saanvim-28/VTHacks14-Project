@@ -58,6 +58,11 @@ interface PharmaPopulationItem {
 const OPENROUTER_EMBEDDING_MODEL =
   "liquid/lfm-2.5-embedding-350m:free";
 
+// Used only to explain the already-selected Top 5.
+// It does not choose, rank, or alter the Top 5.
+const OPENROUTER_GENERATION_MODEL =
+  "google/gemini-2.5-flash-lite";
+
 // Absolute minimum similarity.
 //
 // Keep this at 0.45 for now.
@@ -1205,74 +1210,293 @@ function buildGeneralTop5(
 // - no diagnosis or treatment recommendation
 // ======================================================
 
-function generateTop5Briefing(
+async function generateTop5Briefing(
   topContent: PharmaPopulationItem[],
   totalPatientCount: number,
-): string {
+  apiKey: string,
+): Promise<string> {
   if (topContent.length === 0) {
     return (
       "No sufficiently relevant pharma knowledge-base content " +
-      "was available to build the general Top 5 summary."
+      "was available to build the general Top 5 briefing."
     );
   }
 
-  const populationItems =
-    topContent.filter(
-      (item) =>
-        item.top_5_category ===
-        "POPULATION",
+  // The Top 5 is already locked before this function runs.
+  // The LLM only explains the deterministic result.
+  const top5Data =
+    topContent.map(
+      (item, index) => ({
+        rank:
+          index + 1,
+
+        product_name:
+          item.product_name,
+
+        category:
+          item.top_5_category,
+
+        therapeutic_area:
+          item.therapeutic_area,
+
+        indication:
+          item.indication,
+
+        clinical_topics:
+          item.clinical_topics,
+
+        description:
+          item.content,
+
+        matched_patient_count:
+          item.matched_patient_count,
+
+        total_patient_count:
+          item.total_patient_count,
+
+        population_match_percent:
+          Number(
+            (
+              item.population_match *
+              100
+            ).toFixed(1),
+          ),
+
+        average_similarity_percent:
+          Number(
+            (
+              item.average_similarity *
+              100
+            ).toFixed(1),
+          ),
+
+        max_similarity_percent:
+          Number(
+            (
+              item.max_similarity *
+              100
+            ).toFixed(1),
+          ),
+
+        deterministic_selection_reason:
+          item.top_5_reason,
+      }),
     );
 
-  const precisionItems =
-    topContent.filter(
-      (item) =>
-        item.top_5_category ===
-        "PRECISION",
+  const systemPrompt = `
+You are writing a short informational briefing for a healthcare professional engagement prototype.
+
+The five pharma knowledge-base items have ALREADY been selected and ranked by deterministic software. You must preserve their exact order.
+
+You MUST NOT:
+- change the ranking
+- choose different products
+- claim one medication is medically better
+- recommend prescribing a medication
+- recommend treatment
+- diagnose a patient
+- determine clinical urgency
+- describe semantic similarity as clinical accuracy
+- invent facts that are not present in the supplied data
+
+Your job is ONLY to explain the already-selected Top 5.
+
+For EACH of the five items, briefly explain:
+1. what the product or knowledge-base item covers
+2. why it was relevant to the analyzed patients
+3. why it earned its place in the Top 5
+
+The first three items are population selections. They were selected primarily for broader relevance across the available patient matches.
+
+The final two items are precision selections. They may apply to fewer patients, but they had especially strong individual semantic matches among the remaining items.
+
+Use only the supplied therapeutic area, indication, clinical topics, description, patient counts, similarity statistics, and deterministic selection reason.
+
+The percentages are semantic similarity scores used for information retrieval. They are NOT measures of clinical accuracy, treatment effectiveness, or prescribing confidence.
+
+Write approximately 110 to 140 words so the result can be read aloud in about one minute.
+
+Make the briefing natural, concise, and easy to understand aloud. Mention all five products by name and in their supplied ranking order. Give a quick plain-English description of each product before explaining why it was selected.
+
+Do not use bullet points. Do not include a heading. Do not mention vectors, embeddings, databases, APIs, algorithms, prompts, or implementation details.
+
+End with one short sentence explaining that the results surface relevant informational content and are not treatment recommendations.
+  `.trim();
+
+  const userPrompt = `
+Number of successfully analyzed patients: ${totalPatientCount}
+
+Already-selected Top 5, in locked ranking order:
+${JSON.stringify(top5Data, null, 2)}
+
+Write the approximately 60-second briefing now.
+  `.trim();
+
+  try {
+    const response =
+      await fetch(
+        "https://openrouter.ai/api/v1/chat/completions",
+        {
+          method:
+            "POST",
+
+          headers: {
+            Authorization:
+              `Bearer ${apiKey}`,
+
+            "Content-Type":
+              "application/json",
+          },
+
+          body:
+            JSON.stringify({
+              model:
+                OPENROUTER_GENERATION_MODEL,
+
+              messages: [
+                {
+                  role:
+                    "system",
+
+                  content:
+                    systemPrompt,
+                },
+                {
+                  role:
+                    "user",
+
+                  content:
+                    userPrompt,
+                },
+              ],
+
+              // Low temperature keeps the explanation close
+              // to the supplied retrieval facts.
+              temperature:
+                0.2,
+
+              max_tokens:
+                300,
+            }),
+        },
+      );
+
+    let data: any;
+
+    try {
+      data =
+        await response.json();
+    } catch {
+      data =
+        null;
+    }
+
+    if (!response.ok) {
+      console.error(
+        "OpenRouter Top 5 briefing error:",
+        response.status,
+        data,
+      );
+
+      throw new Error(
+        `OpenRouter Top 5 briefing failed: ${response.status}`,
+      );
+    }
+
+    const briefing =
+      data?.choices?.[0]?.message?.content;
+
+    if (
+      typeof briefing !== "string" ||
+      briefing.trim() === ""
+    ) {
+      throw new Error(
+        "OpenRouter did not return a valid Top 5 briefing.",
+      );
+    }
+
+    return briefing.trim();
+  } catch (error) {
+    // Never let a generation failure break the entire
+    // pharma-search response during the demo.
+    console.error(
+      "AI Top 5 briefing generation failed:",
+      error,
     );
 
-  const populationText =
-    populationItems.length > 0
-      ? populationItems
-          .map(
-            (item) =>
-              `${item.product_name} connected with ` +
-              `${item.matched_patient_count} patients at ` +
-              `${(
-                item.average_similarity *
-                100
-              ).toFixed(1)}% average semantic similarity`,
-          )
-          .join("; ")
-      : "no broad population items were available";
+    return generateTop5BriefingFallback(
+      topContent,
+      totalPatientCount,
+    );
+  }
+}
 
-  const precisionText =
-    precisionItems.length > 0
-      ? precisionItems
-          .map(
-            (item) =>
-              `${item.product_name} reached ` +
-              `${(
-                item.max_similarity *
-                100
-              ).toFixed(1)}% for its strongest patient match`,
-          )
-          .join("; ")
-      : "no additional precision items were available";
+// ======================================================
+// FALLBACK TOP 5 BRIEFING
+//
+// Used only if the generative-model request fails.
+// ======================================================
+
+function generateTop5BriefingFallback(
+  topContent: PharmaPopulationItem[],
+  totalPatientCount: number,
+): string {
+  const descriptions =
+    topContent
+      .map(
+        (item, index) => {
+          const rank =
+            index + 1;
+
+          const product =
+            item.product_name;
+
+          const area =
+            item.therapeutic_area ||
+            "its therapeutic area";
+
+          const indication =
+            item.indication ||
+            "relevant clinical information";
+
+          const patientWord =
+            item.matched_patient_count === 1
+              ? "patient"
+              : "patients";
+
+          if (
+            item.top_5_category ===
+            "POPULATION"
+          ) {
+            return (
+              `${product}, ranked ${rank}, covers ${indication} ` +
+              `in ${area}. It matched ` +
+              `${item.matched_patient_count} ${patientWord}, ` +
+              `making it one of the broader available matches ` +
+              `for the current patient population.`
+            );
+          }
+
+          return (
+            `${product}, ranked ${rank}, covers ${indication} ` +
+            `in ${area}. It was selected as a precision match ` +
+            `with a strongest patient-level semantic similarity of ` +
+            `${(
+              item.max_similarity *
+              100
+            ).toFixed(1)}%.`
+          );
+        },
+      )
+      .join(" ");
 
   return (
-    `This Top 5 summarizes pharma knowledge-base content surfaced across ` +
-    `${totalPatientCount} successfully analyzed patients. ` +
-    `The first ${populationItems.length} items emphasize broad relevance: ` +
-    `${populationText}. ` +
-    `The remaining ${precisionItems.length} emphasize precision, so they may ` +
-    `apply to fewer patients but have especially strong individual matches: ` +
-    `${precisionText}. ` +
-    `Together, the list balances population coverage with high-specificity ` +
-    `retrieval rather than relying on only one ranking signal. ` +
-    `The percentages shown are semantic similarity scores from information ` +
-    `retrieval, not measures of clinical accuracy, urgency, or treatment ` +
-    `effectiveness. The results are intended to help users discover relevant ` +
-    `knowledge-base information and do not recommend a medication or treatment.`
+    `Across ${totalPatientCount} successfully analyzed patients, ` +
+    `${descriptions} ` +
+    `The first three selections prioritize broader population relevance, ` +
+    `while the final two highlight strong individual matches. ` +
+    `These results surface relevant informational content and are not ` +
+    `treatment recommendations.`
   );
 }
 
@@ -1496,9 +1720,10 @@ Deno.serve(
         );
 
       const topContentBriefing =
-        generateTop5Briefing(
+        await generateTop5Briefing(
           topContent,
           successful,
+          openRouterKey,
         );
 
       // ==================================================
