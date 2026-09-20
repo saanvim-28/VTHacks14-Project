@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronRight, LayoutList, Menu, Sparkles, Volume2 } from "lucide-react";
+import { LayoutList, Menu, Sparkles, Volume2 } from "lucide-react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { patientsQuery } from "@/data/queries";
 import { cn } from "@/lib/utils";
@@ -9,11 +9,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const path = useRouterState({ select: (state) => state.location.pathname });
   const { data: patients } = useQuery(patientsQuery());
   const [mobileOpen, setMobileOpen] = useState(false);
-  const currentPatient = patients?.find(
-    (patient) =>
-      path.startsWith(`/patients/${patient.patient_id}/`) ||
-      path === `/patients/${patient.patient_id}`,
-  );
   return (
     <div className="app-frame top-header-app">
       <div className="workspace">
@@ -31,13 +26,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <small>Medication workspace</small>
             </span>
           </Link>
-          <div className="workspace-label top-header-workspace">
-            <span className="workspace-avatar">CW</span>
-            <div>
-              <strong>Clinical workspace</strong>
-              <small>Patient management</small>
-            </div>
-          </div>
           <button
             className="top-header-menu icon-button"
             aria-label="Toggle navigation"
@@ -93,19 +81,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </div>
               <span className="local-status" title="Local workspace" aria-label="Local workspace" />
             </div>
-          </div>
-        </header>
-        <header className="workspace-topbar">
-          <div className="breadcrumb">
-            <span>Workspace</span>
-            <ChevronRight size={14} />
-            <Link to="/">Patient records</Link>
-            {currentPatient && (
-              <>
-                <ChevronRight size={14} />
-                <span className="breadcrumb-current">{currentPatient.name}</span>
-              </>
-            )}
           </div>
         </header>
         {children}

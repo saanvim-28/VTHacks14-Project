@@ -7824,3 +7824,35 @@ body,
   background: #1c513d !important;
   border-color: #2a644e !important;
 }
+.clinical-action {
+  position: relative;
+  z-index: 2;
+}
+.clinical-action .review-sample {
+  position: relative;
+  z-index: 3;
+  pointer-events: auto;
+  cursor: pointer;
+}
+/* Patient overview spacing and timeline alignment. */
+.complete-patient-page .data-source-panel > .imported-context-grid {
+  gap: 24px !important;
+  padding: 24px 28px 28px !important;
+}
+.complete-patient-page .imported-context-card {
+  margin: 0 !important;
+}
+.complete-patient-page .record-change-panel {
+  margin-top: 24px !important;
+  margin-bottom: 24px !important;
+}
+.complete-patient-page .visit-panel {
+  margin-top: 24px !important;
+  margin-bottom: 24px !important;
+}
+.complete-patient-page .checklist-panel {
+  margin-top: 24px !important;
+}
+.complete-patient-page .encounter-list li:not(:last-child)::after {
+  left: 153px !important;
+}
