@@ -12,7 +12,7 @@ import {
 
 export const Route = createFileRoute("/patients/$patientId/information")({
   head: ({ params }) => ({
-    meta: [{ title: `Clinical Information for Patient ${params.patientId} — Vytra` }],
+    meta: [{ title: `Clinical Information for Patient ${params.patientId} — medMatch` }],
   }),
   loader: ({ context, params }) =>
     context.queryClient.ensureQueryData(patientQuery(params.patientId)),

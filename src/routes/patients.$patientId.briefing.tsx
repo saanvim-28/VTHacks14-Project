@@ -20,7 +20,7 @@ export const Route = createFileRoute("/patients/$patientId/briefing")({
   head: () => ({
     meta: [
       {
-        title: "Clinical Briefing — Vytra",
+        title: "Clinical Briefing — medMatch",
       },
     ],
   }),

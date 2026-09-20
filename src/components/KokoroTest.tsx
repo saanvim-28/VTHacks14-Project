@@ -11,7 +11,7 @@ export function KokoroTest() {
       setStatus("Loading AI voice...");
 
       const audio = await generateSpeech(
-        "Welcome to Vytra. Your clinical briefing is ready. Several important patient updates may require your attention today.",
+        "Welcome to medMatch. Your clinical briefing is ready. Several important patient updates may require your attention today.",
       );
 
       console.log("Kokoro audio result:", audio);

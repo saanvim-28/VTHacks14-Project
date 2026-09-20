@@ -6867,7 +6867,7 @@ textarea {
   }
 }
 
-/* Vytra logo mark: paired clinical brackets with a central signal point. */
+/* medMatch logo mark: paired clinical brackets with a central signal point. */
 .brand-mark {
   position: relative !important;
   display: block !important;
@@ -7144,7 +7144,7 @@ textarea {
   }
 }
 
-/* Vytra unified dark-green workspace system */
+/* medMatch unified dark-green workspace system */
 :root {
   --background: #f9f9f6 !important;
   --foreground: #173126 !important;
@@ -7461,4 +7461,366 @@ body,
 .queue-summary .summary-card small {
   max-width: 260px;
   line-height: 1.45;
+}
+
+/* Horizontal header refactor: preserve sidebar tokens while moving navigation to the top. */
+.top-header-app {
+  display: block !important;
+  min-height: 100vh;
+  background: #f7f4ec;
+}
+.top-header-app .workspace {
+  width: 100% !important;
+  min-width: 0 !important;
+  margin-left: 0 !important;
+}
+.top-header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  min-height: 82px;
+  padding: 12px 28px;
+  background: #072e24;
+  color: #f5f8f3;
+  border-bottom: 1px solid #2d5541;
+}
+.top-header-brand {
+  flex: 0 0 auto;
+  color: #f5f8f3 !important;
+  text-decoration: none;
+}
+.top-header-workspace {
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 8px 14px;
+  border-left: 1px solid #2d5541;
+  color: #f5f8f3;
+}
+.top-header-workspace strong,
+.top-header-workspace small {
+  color: inherit !important;
+}
+.top-header-nav {
+  display: flex;
+  align-items: stretch;
+  gap: 4px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.top-header-nav .nav-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 48px;
+  padding: 0 15px;
+  border-radius: 6px;
+  color: #c5d5cb;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.top-header-nav .nav-item:hover {
+  background: #164436;
+  color: #fff;
+}
+.top-header-nav .nav-item.nav-active {
+  background: #1fad5a;
+  color: #072e24;
+}
+.top-header-nav .nav-count {
+  margin-left: 3px;
+  background: #bfe7cf;
+  color: #072e24;
+}
+.top-header-tools {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 0 0 auto;
+}
+.top-header-source-wrap {
+  position: relative;
+}
+.top-header .source-control {
+  padding: 8px 10px;
+  border: 1px solid #2d5541;
+  border-radius: 6px;
+  background: #164436;
+  color: #f5f8f3;
+}
+.top-header .source-control strong,
+.top-header .source-control small {
+  color: inherit !important;
+}
+.top-source-details {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 10px);
+  z-index: 50;
+  width: 270px;
+  border: 1px solid #2d5541;
+  border-radius: 8px;
+  background: #164436;
+  color: #f5f8f3;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
+}
+.top-source-details p,
+.top-source-details strong {
+  color: inherit !important;
+}
+.top-header .workspace-user {
+  padding-left: 12px;
+  border-left: 1px solid #2d5541;
+  color: #f5f8f3;
+}
+.top-header .workspace-user strong,
+.top-header .workspace-user small {
+  color: inherit !important;
+}
+.top-header-menu {
+  display: none;
+  margin-left: auto;
+  color: #f5f8f3;
+}
+.top-header-app .workspace-topbar {
+  margin-left: 0;
+}
+@media (max-width: 1100px) {
+  .top-header {
+    gap: 12px;
+    padding-inline: 18px;
+  }
+  .top-header-workspace {
+    display: none;
+  }
+  .top-header-nav .nav-item {
+    padding-inline: 10px;
+  }
+  .top-header .workspace-user div {
+    display: none;
+  }
+}
+@media (max-width: 760px) {
+  .top-header {
+    min-height: 68px;
+  }
+  .top-header-menu {
+    display: block;
+  }
+  .top-header-nav {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    left: 0;
+    flex-direction: column;
+    padding: 12px 18px;
+    background: #164436;
+    border-top: 1px solid #2d5541;
+  }
+  .top-header-nav.top-header-nav-open {
+    display: flex;
+  }
+  .top-header-nav .nav-item {
+    width: 100%;
+  }
+  .top-header-tools {
+    margin-left: auto;
+  }
+  .top-header .source-control {
+    display: none;
+  }
+}
+
+/* Overview landing page and direct patient queue flow. */
+.overview-page .page-heading-row {
+  margin-bottom: 24px;
+}
+.overview-page .summary-card {
+  min-height: 190px;
+}
+.overview-page .summary-card-featured {
+  background: #12402f !important;
+  color: #fff !important;
+  border-color: #12402f !important;
+}
+.overview-page .summary-card-featured span,
+.overview-page .summary-card-featured strong,
+.overview-page .summary-card-featured small {
+  color: #fff !important;
+}
+.overview-briefing {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 18px 28px;
+  align-items: center;
+  margin-top: 24px;
+  padding: 26px 30px;
+  border: 1px solid #1e293b;
+  border-radius: 14px;
+  background: #e2ece9;
+  color: #12402f;
+}
+.overview-briefing-heading h2 {
+  margin: 7px 0 0;
+  color: #12402f;
+  font-size: 24px;
+}
+.overview-audio-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+}
+.overview-play {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border: 0;
+  border-radius: 50%;
+  background: #6b2d4b;
+  color: #fff;
+  font-size: 17px;
+  cursor: pointer;
+}
+.overview-play:disabled {
+  opacity: 0.65;
+}
+.overview-audio-track {
+  width: 170px;
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #c5d5cb;
+}
+.overview-audio-track span {
+  display: block;
+  width: 32%;
+  height: 100%;
+  border-radius: inherit;
+  background: #3e8368;
+}
+.overview-audio-time {
+  color: #12402f;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.overview-audio-secondary {
+  padding: 10px 16px;
+  border: 1px solid #6b2d4b;
+  border-radius: 999px;
+  background: transparent;
+  color: #6b2d4b;
+  font-weight: 700;
+  cursor: pointer;
+}
+.overview-briefing > p {
+  grid-column: 1 / -1;
+  max-width: 950px;
+  margin: 0;
+  color: #1c2b23;
+  font-size: 15px;
+  line-height: 1.55;
+}
+.overview-directory-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  grid-column: 1 / -1;
+  color: #6b2d4b !important;
+  font-weight: 800;
+  text-decoration: none;
+}
+.queue-page {
+  padding-top: 28px !important;
+}
+.queue-page .clinical-queue {
+  margin-top: 0 !important;
+}
+@media (max-width: 760px) {
+  .overview-briefing {
+    grid-template-columns: 1fr;
+  }
+  .overview-audio-row {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+  .overview-briefing > p {
+    grid-column: auto;
+  }
+}
+.top-header-nav .nav-item {
+  justify-content: center;
+  text-align: center;
+}
+.top-header-nav .nav-item > span:not(.nav-count) {
+  text-align: center;
+}
+.top-header-tools,
+.top-header .workspace-user,
+.top-header .workspace-user > div {
+  align-items: center;
+}
+.top-header .workspace-user {
+  display: flex;
+  min-height: 48px;
+}
+.top-header .workspace-user strong {
+  line-height: 1.2;
+  white-space: nowrap;
+}
+.top-header .workspace-user {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding-block: 0;
+}
+.top-header .workspace-user > div {
+  display: flex;
+  align-items: center;
+  min-height: 48px;
+}
+.top-header .workspace-user strong {
+  display: block;
+  line-height: 1.2;
+}
+.top-header .workspace-user {
+  transform: translateY(-7px);
+}
+.top-header .workspace-user {
+  border: 0 !important;
+  margin: 0 !important;
+  padding: 0 0 0 12px !important;
+}
+.top-header .workspace-user {
+  transform: none !important;
+  border: 1px solid #2d5541 !important;
+  border-radius: 6px;
+  padding: 8px 12px !important;
+  min-height: 48px;
+}
+.top-header .workspace-user {
+  height: 96px !important;
+  min-height: 96px !important;
+  box-sizing: border-box;
+}
+@media (max-width: 1100px) {
+  .top-header .workspace-user {
+    height: 48px !important;
+    min-height: 48px !important;
+  }
+}
+.top-header .workspace-user {
+  height: 48px !important;
+  min-height: 48px !important;
+}
+.top-header .workspace-user {
+  background: #1c513d !important;
+  border-color: #2a644e !important;
 }

@@ -7,7 +7,7 @@ import { analyzePopulation } from "@/engine/population-analysis";
 import { PageSkeleton, RouteError } from "@/components/chatone/shared";
 
 export const Route = createFileRoute("/matches")({
-  head: () => ({ meta: [{ title: "Clinical Matches — Vytra" }] }),
+  head: () => ({ meta: [{ title: "Clinical Matches — medMatch" }] }),
   loader: ({ context }) => context.queryClient.ensureQueryData(patientsQuery()),
   pendingComponent: PageSkeleton,
   errorComponent: RouteError,

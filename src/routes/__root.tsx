@@ -78,9 +78,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Vytra — Medication workspace" },
+      { title: "medMatch — Medication workspace" },
       { name: "description", content: "Patient records from the OpenEMR export." },
-      { name: "author", content: "Vytra" },
+      { name: "author", content: "medMatch" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:site", content: "@Lovable" },
