@@ -80,6 +80,16 @@ const MAX_EMBEDDING_ATTEMPTS = 4;
 // Delay between patients to reduce request bursts.
 const PATIENT_REQUEST_DELAY_MS = 500;
 
+// General Top 5 configuration.
+//
+// IMPORTANT:
+// Similarity is a semantic retrieval score, not clinical accuracy
+// or a treatment-confidence percentage.
+const TOP_3_MIN_AVERAGE_SIMILARITY = 0.70;
+const TOP_2_MIN_MAX_SIMILARITY = 0.70;
+const TOP_POPULATION_COUNT = 3;
+const TOP_PRECISION_COUNT = 2;
+
 // ======================================================
 // HELPERS
 // ======================================================
@@ -706,10 +716,6 @@ async function processPatient(
 function buildGeneralTop5(
   patientResults: any[],
 ): PharmaPopulationItem[] {
-  // ==================================================
-  // 1. SUCCESSFUL PATIENTS ONLY
-  // ==================================================
-
   const successfulResults =
     patientResults.filter(
       (patientResult) =>
@@ -719,22 +725,15 @@ function buildGeneralTop5(
   const totalPatientCount =
     successfulResults.length;
 
-  if (
-    totalPatientCount === 0
-  ) {
+  if (totalPatientCount === 0) {
     return [];
   }
-
-  // ==================================================
-  // 2. GROUP PHARMA CONTENT ACROSS PATIENTS
-  // ==================================================
 
   const contentMap =
     new Map<
       number,
       {
         id: number;
-
         product_name: string;
         therapeutic_area: string;
         indication: string;
@@ -742,65 +741,50 @@ function buildGeneralTop5(
         title: string;
         content: string;
         source: string;
-
         matched_patient_ids:
           Array<string | number>;
-
-        similarities:
-          number[];
+        similarities: number[];
       }
     >();
 
-  for (
-    const patientResult
-    of successfulResults
-  ) {
+  for (const patientResult of successfulResults) {
     const results =
-      Array.isArray(
-        patientResult.results,
-      )
+      Array.isArray(patientResult.results)
         ? patientResult.results
         : [];
 
-    for (
-      const item
-      of results
-    ) {
+    for (const item of results) {
+      const similarity =
+        Number(item.similarity);
+
+      if (!Number.isFinite(similarity)) {
+        continue;
+      }
+
       const existing =
-        contentMap.get(
-          item.id,
-        );
+        contentMap.get(item.id);
 
       if (existing) {
-        // Only count the same patient once.
-
+        // A patient should contribute at most one similarity
+        // to a given pharma-content item.
         if (
-          !existing
-            .matched_patient_ids
-            .includes(
-              patientResult.patient_id,
-            )
+          !existing.matched_patient_ids.includes(
+            patientResult.patient_id,
+          )
         ) {
-          existing
-            .matched_patient_ids
-            .push(
-              patientResult.patient_id,
-            );
-        }
-
-        existing
-          .similarities
-          .push(
-            Number(
-              item.similarity,
-            ),
+          existing.matched_patient_ids.push(
+            patientResult.patient_id,
           );
+
+          existing.similarities.push(
+            similarity,
+          );
+        }
       } else {
         contentMap.set(
           item.id,
           {
-            id:
-              item.id,
+            id: item.id,
 
             product_name:
               String(
@@ -844,19 +828,13 @@ function buildGeneralTop5(
             ],
 
             similarities: [
-              Number(
-                item.similarity,
-              ),
+              similarity,
             ],
           },
         );
       }
     }
   }
-
-  // ==================================================
-  // 3. CALCULATE POPULATION STATISTICS
-  // ==================================================
 
   const populationItems =
     Array
@@ -866,9 +844,7 @@ function buildGeneralTop5(
       .map(
         (item) => {
           const matchedPatientCount =
-            item
-              .matched_patient_ids
-              .length;
+            item.matched_patient_ids.length;
 
           const populationMatch =
             matchedPatientCount /
@@ -880,8 +856,7 @@ function buildGeneralTop5(
                 sum: number,
                 similarity: number,
               ) =>
-                sum +
-                similarity,
+                sum + similarity,
               0,
             ) /
             item.similarities.length;
@@ -938,81 +913,139 @@ function buildGeneralTop5(
       );
 
   // ==================================================
-  // 4. TOP 3 — POPULATION RELEVANCE
+  // TOP 3 — POPULATION RELEVANCE
   //
-  // Primary:
-  // matched patient count
+  // Prefer items connected to the most patients,
+  // while requiring ~70% average semantic similarity.
   //
-  // Tie #1:
-  // average similarity
-  //
-  // Tie #2:
-  // maximum similarity
+  // If the synthetic data does not produce three items
+  // at 0.70+, we fall back to the strongest remaining
+  // population items so the UI can still show a Top 5.
+  // The returned object tells the frontend whether the
+  // preferred threshold was met.
   // ==================================================
 
-  const populationRanked =
-    [
-      ...populationItems,
-    ].sort(
-      (a, b) => {
-        if (
-          b.matched_patient_count !==
-          a.matched_patient_count
-        ) {
-          return (
-            b.matched_patient_count -
+  const populationStrong =
+    populationItems
+      .filter(
+        (item) =>
+          item.average_similarity >=
+          TOP_3_MIN_AVERAGE_SIMILARITY,
+      )
+      .sort(
+        (a, b) => {
+          if (
+            b.matched_patient_count !==
             a.matched_patient_count
-          );
-        }
+          ) {
+            return (
+              b.matched_patient_count -
+              a.matched_patient_count
+            );
+          }
 
-        if (
-          b.average_similarity !==
-          a.average_similarity
-        ) {
-          return (
-            b.average_similarity -
+          if (
+            b.average_similarity !==
             a.average_similarity
-          );
-        }
+          ) {
+            return (
+              b.average_similarity -
+              a.average_similarity
+            );
+          }
 
-        return (
-          b.max_similarity -
-          a.max_similarity
-        );
-      },
+          return (
+            b.max_similarity -
+            a.max_similarity
+          );
+        },
+      );
+
+  const populationFallback =
+    populationItems
+      .filter(
+        (item) =>
+          item.average_similarity <
+          TOP_3_MIN_AVERAGE_SIMILARITY,
+      )
+      .sort(
+        (a, b) => {
+          if (
+            b.matched_patient_count !==
+            a.matched_patient_count
+          ) {
+            return (
+              b.matched_patient_count -
+              a.matched_patient_count
+            );
+          }
+
+          if (
+            b.average_similarity !==
+            a.average_similarity
+          ) {
+            return (
+              b.average_similarity -
+              a.average_similarity
+            );
+          }
+
+          return (
+            b.max_similarity -
+            a.max_similarity
+          );
+        },
+      );
+
+  const top3Base =
+    [
+      ...populationStrong,
+      ...populationFallback,
+    ].slice(
+      0,
+      TOP_POPULATION_COUNT,
     );
 
   const top3 =
-    populationRanked
-      .slice(
-        0,
-        3,
-      )
-      .map(
-        (item) => ({
+    top3Base.map(
+      (item) => {
+        const thresholdMet =
+          item.average_similarity >=
+          TOP_3_MIN_AVERAGE_SIMILARITY;
+
+        return {
           ...item,
 
           top_5_category:
             "POPULATION" as const,
 
           top_5_reason:
-            `Matched ${item.matched_patient_count} of ` +
+            `Selected for broad population relevance. ` +
+            `${item.product_name} matched ` +
+            `${item.matched_patient_count} of ` +
             `${item.total_patient_count} analyzed patients ` +
             `(${(
               item.population_match *
               100
-            ).toFixed(1)}% of the population) ` +
+            ).toFixed(1)}% of patients) ` +
             `with an average semantic similarity of ` +
             `${(
               item.average_similarity *
               100
-            ).toFixed(1)}%.`,
-        }),
-      );
-
-  // ==================================================
-  // 5. EXCLUDE TOP 3 FROM PRECISION CANDIDATES
-  // ==================================================
+            ).toFixed(1)}%.` +
+            (
+              thresholdMet
+                ? ""
+                : ` This was the strongest available population candidate ` +
+                  `even though its average similarity was below the preferred ` +
+                  `${(
+                    TOP_3_MIN_AVERAGE_SIMILARITY *
+                    100
+                  ).toFixed(0)}% threshold.`
+            ),
+        };
+      },
+    );
 
   const top3Ids =
     new Set(
@@ -1023,25 +1056,27 @@ function buildGeneralTop5(
     );
 
   // ==================================================
-  // 6. TOP 2 PRECISION RESULTS
+  // BOTTOM 2 — PRECISION
   //
-  // Primary:
-  // maximum individual similarity
-  //
-  // Tie #1:
-  // average similarity
-  //
-  // Tie #2:
-  // number of matching patients
+  // These may apply to fewer patients.
+  // Rank primarily by the strongest patient-level
+  // similarity, then average similarity, then coverage.
   // ==================================================
 
-  const precisionRanked =
-    populationItems
+  const remainingItems =
+    populationItems.filter(
+      (item) =>
+        !top3Ids.has(
+          item.id,
+        ),
+    );
+
+  const precisionStrong =
+    remainingItems
       .filter(
         (item) =>
-          !top3Ids.has(
-            item.id,
-          ),
+          item.max_similarity >=
+          TOP_2_MIN_MAX_SIMILARITY,
       )
       .sort(
         (a, b) => {
@@ -1072,39 +1107,173 @@ function buildGeneralTop5(
         },
       );
 
-  const bottom2 =
-    precisionRanked
-      .slice(
-        0,
-        2,
+  const precisionFallback =
+    remainingItems
+      .filter(
+        (item) =>
+          item.max_similarity <
+          TOP_2_MIN_MAX_SIMILARITY,
       )
-      .map(
-        (item) => ({
+      .sort(
+        (a, b) => {
+          if (
+            b.max_similarity !==
+            a.max_similarity
+          ) {
+            return (
+              b.max_similarity -
+              a.max_similarity
+            );
+          }
+
+          if (
+            b.average_similarity !==
+            a.average_similarity
+          ) {
+            return (
+              b.average_similarity -
+              a.average_similarity
+            );
+          }
+
+          return (
+            b.matched_patient_count -
+            a.matched_patient_count
+          );
+        },
+      );
+
+  const bottom2Base =
+    [
+      ...precisionStrong,
+      ...precisionFallback,
+    ].slice(
+      0,
+      TOP_PRECISION_COUNT,
+    );
+
+  const bottom2 =
+    bottom2Base.map(
+      (item) => {
+        const thresholdMet =
+          item.max_similarity >=
+          TOP_2_MIN_MAX_SIMILARITY;
+
+        return {
           ...item,
 
           top_5_category:
             "PRECISION" as const,
 
           top_5_reason:
-            `Selected for its strong individual semantic match of ` +
+            `Selected for high precision. ` +
+            `${item.product_name} reached a strongest patient-level ` +
+            `semantic similarity of ` +
             `${(
               item.max_similarity *
               100
-            ).toFixed(1)}%. ` +
-            `It matched ` +
+            ).toFixed(1)}% and matched ` +
             `${item.matched_patient_count} of ` +
-            `${item.total_patient_count} analyzed patients.`,
-        }),
-      );
-
-  // ==================================================
-  // 7. FINAL GENERAL TOP 5
-  // ==================================================
+            `${item.total_patient_count} analyzed patients.` +
+            (
+              thresholdMet
+                ? ""
+                : ` This was one of the strongest remaining precision ` +
+                  `candidates even though it was below the preferred ` +
+                  `${(
+                    TOP_2_MIN_MAX_SIMILARITY *
+                    100
+                  ).toFixed(0)}% threshold.`
+            ),
+        };
+      },
+    );
 
   return [
     ...top3,
     ...bottom2,
   ];
+}
+
+// ======================================================
+// GENERATE ~60-SECOND GENERAL TOP 5 SUMMARY
+//
+// This is intentionally deterministic/local:
+// - no extra AI/API call
+// - no extra credits
+// - grounded only in the actual retrieval statistics
+// - no diagnosis or treatment recommendation
+// ======================================================
+
+function generateTop5Briefing(
+  topContent: PharmaPopulationItem[],
+  totalPatientCount: number,
+): string {
+  if (topContent.length === 0) {
+    return (
+      "No sufficiently relevant pharma knowledge-base content " +
+      "was available to build the general Top 5 summary."
+    );
+  }
+
+  const populationItems =
+    topContent.filter(
+      (item) =>
+        item.top_5_category ===
+        "POPULATION",
+    );
+
+  const precisionItems =
+    topContent.filter(
+      (item) =>
+        item.top_5_category ===
+        "PRECISION",
+    );
+
+  const populationText =
+    populationItems.length > 0
+      ? populationItems
+          .map(
+            (item) =>
+              `${item.product_name} connected with ` +
+              `${item.matched_patient_count} patients at ` +
+              `${(
+                item.average_similarity *
+                100
+              ).toFixed(1)}% average semantic similarity`,
+          )
+          .join("; ")
+      : "no broad population items were available";
+
+  const precisionText =
+    precisionItems.length > 0
+      ? precisionItems
+          .map(
+            (item) =>
+              `${item.product_name} reached ` +
+              `${(
+                item.max_similarity *
+                100
+              ).toFixed(1)}% for its strongest patient match`,
+          )
+          .join("; ")
+      : "no additional precision items were available";
+
+  return (
+    `This Top 5 summarizes pharma knowledge-base content surfaced across ` +
+    `${totalPatientCount} successfully analyzed patients. ` +
+    `The first ${populationItems.length} items emphasize broad relevance: ` +
+    `${populationText}. ` +
+    `The remaining ${precisionItems.length} emphasize precision, so they may ` +
+    `apply to fewer patients but have especially strong individual matches: ` +
+    `${precisionText}. ` +
+    `Together, the list balances population coverage with high-specificity ` +
+    `retrieval rather than relying on only one ranking signal. ` +
+    `The percentages shown are semantic similarity scores from information ` +
+    `retrieval, not measures of clinical accuracy, urgency, or treatment ` +
+    `effectiveness. The results are intended to help users discover relevant ` +
+    `knowledge-base information and do not recommend a medication or treatment.`
+  );
 }
 
 // ======================================================
@@ -1326,6 +1495,12 @@ Deno.serve(
           patientResults,
         );
 
+      const topContentBriefing =
+        generateTop5Briefing(
+          topContent,
+          successful,
+        );
+
       // ==================================================
       // 8. DEBUG TOP 5
       // ==================================================
@@ -1381,6 +1556,26 @@ Deno.serve(
         top_content:
           topContent,
 
+        top_content_briefing:
+          topContentBriefing,
+
+        top_content_methodology: {
+          population_slots:
+            TOP_POPULATION_COUNT,
+
+          precision_slots:
+            TOP_PRECISION_COUNT,
+
+          preferred_population_average_similarity:
+            TOP_3_MIN_AVERAGE_SIMILARITY,
+
+          preferred_precision_max_similarity:
+            TOP_2_MIN_MAX_SIMILARITY,
+
+          similarity_note:
+            "Similarity scores measure semantic retrieval similarity, not clinical accuracy or treatment confidence.",
+        },
+
         patients:
           patientResults,
       });
@@ -1408,3 +1603,4 @@ Deno.serve(
     }
   },
 );
+
