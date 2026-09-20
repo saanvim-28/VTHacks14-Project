@@ -46,11 +46,14 @@ function Overview() {
   );
   const topMatches = pharmaQuery.data?.top_content?.slice(0, 5) ?? [];
   const summary = `Overall patient panel synchronization complete. ${patients.length} patient files imported from OpenEMR with ${interactionCount} recent clinical interactions. Key findings indicate active management across the documented conditions and medications, with recent updates ready for provider review.`;
+  const briefingText = pharmaQuery.data?.top_content_briefing ?? summary;
+  const audioDisabled =
+    audioLoading || pharmaQuery.isLoading || !pharmaQuery.data?.top_content_briefing;
   async function playBriefing() {
-    if (audioLoading) return;
+    if (audioDisabled) return;
     setAudioLoading(true);
     try {
-      const audio = await generateSpeech(summary);
+      const audio = await generateSpeech(briefingText);
       playAudioBlob(audio.toBlob());
       setAudioReady(true);
     } catch (error) {
@@ -111,12 +114,37 @@ function Overview() {
           <div>
             <span className="eyebrow">AI pharmaceutical matching</span>
             <h2 id="overview-matches-title">Top 5 pharmaceutical matches across your patients</h2>
-            <p>
-              {pharmaQuery.data?.top_content_briefing ??
-                "Products and clinical resources are matched to the conditions, medications, and encounter context in the current patient panel."}
-            </p>
+          </div>
+          <div className="overview-audio-row overview-matches-audio">
+            <button
+              className="overview-play"
+              type="button"
+              onClick={playBriefing}
+              disabled={audioDisabled}
+              aria-label="Play AI pharmaceutical matching briefing"
+            >
+              {audioLoading || pharmaQuery.isLoading ? "…" : "▶"}
+            </button>
+            <div className="overview-audio-track">
+              <span />
+            </div>
+            <span className="overview-audio-time">
+              {audioReady ? "0:60 / 0:60" : "0:00 / 0:60"}
+            </span>
+            <button
+              className="overview-audio-secondary"
+              type="button"
+              onClick={playBriefing}
+              disabled={audioDisabled}
+            >
+              {pharmaQuery.isLoading ? "Preparing briefing…" : "Play AI Briefing"}
+            </button>
           </div>
         </header>
+        <p className="overview-matches-description">
+          {pharmaQuery.data?.top_content_briefing ??
+            "Products and clinical resources are matched to the conditions, medications, and encounter context in the current patient panel."}
+        </p>
         {pharmaQuery.isLoading && (
           <p className="overview-matches-status">
             Searching the connected pharmaceutical knowledge base…
@@ -151,36 +179,6 @@ function Overview() {
             No top matches have been returned for this patient panel yet.
           </p>
         )}
-      </section>
-      <section className="overview-briefing" aria-labelledby="overview-briefing-title">
-        <div className="overview-briefing-heading">
-          <span className="eyebrow">AI clinical briefing</span>
-          <h2 id="overview-briefing-title">Clinical Briefing</h2>
-        </div>
-        <div className="overview-audio-row">
-          <button
-            className="overview-play"
-            type="button"
-            onClick={playBriefing}
-            disabled={audioLoading}
-            aria-label="Play AI clinical briefing"
-          >
-            {audioLoading ? "…" : "▶"}
-          </button>
-          <div className="overview-audio-track">
-            <span />
-          </div>
-          <span className="overview-audio-time">{audioReady ? "0:60 / 0:60" : "0:00 / 0:60"}</span>
-          <button
-            className="overview-audio-secondary"
-            type="button"
-            onClick={playBriefing}
-            disabled={audioLoading}
-          >
-            Play AI Briefing
-          </button>
-        </div>
-        <p>{summary}</p>
         <Link className="overview-directory-link" to="/patients">
           Open patient queue <ArrowUpRight size={15} />
         </Link>

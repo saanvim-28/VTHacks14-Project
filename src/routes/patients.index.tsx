@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import {
   LayoutGrid,
   ArrowUpRight,
@@ -12,7 +12,6 @@ import {
   X,
 } from "lucide-react";
 import { patientsQuery } from "@/data/queries";
-import { isPharmaSearchConfigured, searchPharmaForPatients } from "@/data/pharma-api";
 import type { OpenEMRPatient } from "@/types/openemr";
 import { EmptyState, PageSkeleton, RouteError } from "@/components/chatone/shared";
 
@@ -42,14 +41,6 @@ export const Route = createFileRoute("/patients/")({
 function PatientQueue() {
   const { data: queue } = useSuspenseQuery(patientsQuery());
   const [search, setSearch] = useState("");
-  const [rankByMatch, setRankByMatch] = useState(false);
-  const [rankRequested, setRankRequested] = useState(false);
-  const matchQuery = useQuery({
-    queryKey: ["pharma-search", "queue"],
-    queryFn: () => searchPharmaForPatients(queue),
-    enabled: rankRequested && isPharmaSearchConfigured(),
-    staleTime: 5 * 60 * 1000,
-  });
   const normalizedSearch = search.trim().toLowerCase();
   const filteredPatients = queue.filter((patient) =>
     [patient.name, patient.patient_id, patient.dob, ...patient.conditions, ...patient.medications]
@@ -57,17 +48,7 @@ function PatientQueue() {
       .toLowerCase()
       .includes(normalizedSearch),
   );
-  const scores = new Map(
-    (matchQuery.data?.patients ?? []).map((analysis) => [
-      String(analysis.patient_id),
-      analysis.results[0]?.similarity ?? 0,
-    ]),
-  );
-  const visiblePatients = rankByMatch
-    ? [...filteredPatients].sort(
-        (a, b) => (scores.get(String(b.patient_id)) ?? 0) - (scores.get(String(a.patient_id)) ?? 0),
-      )
-    : filteredPatients;
+  const visiblePatients = filteredPatients;
   if (queue.length === 0)
     return (
       <main className="page-shell">
@@ -101,23 +82,6 @@ function PatientQueue() {
               </button>
             )}
           </div>
-          {isPharmaSearchConfigured() && (
-            <button
-              type="button"
-              className="ai-rank-button"
-              aria-pressed={rankByMatch}
-              onClick={() => {
-                setRankRequested(true);
-                setRankByMatch((value) => !value);
-              }}
-            >
-              {matchQuery.isFetching
-                ? "Ranking…"
-                : rankByMatch
-                  ? "AI ranked"
-                  : "Rank by clinical match"}
-            </button>
-          )}
         </header>
         <div className="queue-columns" aria-hidden="true">
           <span>PATIENT / IDENTIFIER</span>
@@ -142,7 +106,7 @@ function PatientQueue() {
             <LayoutGrid size={15} aria-hidden="true" />
             {visiblePatients.length} of {queue.length} records
           </span>
-          <span>Source order · priority not supplied</span>
+          <span>Source order</span>
         </footer>
       </section>
     </main>
