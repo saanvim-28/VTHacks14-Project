@@ -68,11 +68,6 @@ function Overview() {
 
   const conditionCount = patients.reduce((total, patient) => total + patient.conditions.length, 0);
 
-  const medicationCount = patients.reduce(
-    (total, patient) => total + patient.medications.length,
-    0,
-  );
-
   const interactionCount = patients.reduce(
     (total, patient) => total + patient.visit_history.length,
     0,
@@ -183,7 +178,7 @@ function Overview() {
 
     {
       label: "Listed medications",
-      value: medicationCount,
+      value: interactionCount,
       note: "Medication entries across the OpenEMR export",
       icon: Pill,
     },
