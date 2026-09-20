@@ -15,6 +15,7 @@ import { patientsQuery } from "@/data/queries";
 import { isPharmaSearchConfigured, searchPharmaForPatients } from "@/data/pharma-api";
 import type { OpenEMRPatient } from "@/types/openemr";
 import { EmptyState, PageSkeleton, RouteError } from "@/components/chatone/shared";
+import { KokoroTest } from "@/components/KokoroTest";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -234,6 +235,7 @@ function PatientCard({ patient, index }: { patient: OpenEMRPatient; index: numbe
           Review patient
           <ArrowUpRight size={16} />
         </Link>
+        <KokoroTest />
       </div>
     </article>
   );
