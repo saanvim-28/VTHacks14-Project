@@ -7,7 +7,7 @@ console.info("clever-worker started");
 // CONFIG
 // ======================================================
 
-const OPENROUTER_EMBEDDING_MODEL = "liquid/lfm-2.5-embedding-350m:free";
+const OPENROUTER_EMBEDDING_MODEL = "baai/bge-m3";
 
 // ======================================================
 // CREATE OPENROUTER EMBEDDING
